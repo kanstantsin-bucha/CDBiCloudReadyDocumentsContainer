@@ -1,7 +1,5 @@
 # CDBiCloudReadyDocumentsContainer
-<<<<<<< eaafd31792a66c639e0380a76e28e72328b436f5
 UIDocument based container with CRUD operations supposed to use with iCloud Documents
-=======
 
 UIDocument CRUD container maintains connection to iCloud and make delegates calls on it's' state changed.
 It also provide a list of documents stored on the cloud and updates it in real time.
@@ -44,4 +42,3 @@ yocaminobien, yocaminobien@gmail.com
 ## License
 
 CDBiCloudReadyDocumentsContainer is available under the MIT license. See the LICENSE file for more info.
->>>>>>> Initial commit

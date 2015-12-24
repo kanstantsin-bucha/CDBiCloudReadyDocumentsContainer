@@ -9,7 +9,7 @@ CDBDocument resolves conflicts automatically based on the latest version.
 CDBDocument could rename file of a document.
 CDBDocument provides document file states and user friendly properties to check them.
 
-[![CI Status](http://img.shields.io/travis/estbyright/CDBiCloudReadyDocumentsContainer.svg?style=flat)](https://travis-ci.org/estbyright/CDBiCloudReadyDocumentsContainer)
+[![CI Status](http://img.shields.io/travis/yocaminobien/CDBiCloudReadyDocumentsContainer.svg?style=flat)](https://travis-ci.org/yocaminobien/CDBiCloudReadyDocumentsContainer)
 [![Version](https://img.shields.io/cocoapods/v/CDBiCloudReadyDocumentsContainer.svg?style=flat)](http://cocoapods.org/pods/CDBiCloudReadyDocumentsContainer)
 [![License](https://img.shields.io/cocoapods/l/CDBiCloudReadyDocumentsContainer.svg?style=flat)](http://cocoapods.org/pods/CDBiCloudReadyDocumentsContainer)
 [![Platform](https://img.shields.io/cocoapods/p/CDBiCloudReadyDocumentsContainer.svg?style=flat)](http://cocoapods.org/pods/CDBiCloudReadyDocumentsContainer)

@@ -441,7 +441,7 @@
 #pragma mark Handle state changes
 
 - (void)changeStateTo:(CDBContaineriCloudState)state {
-    if (self.state == state) {
+    if (_state == state) {
         return;
     }
     
@@ -669,7 +669,7 @@
         return;
     }
     
-    [self synchronousEnsureThatDirectoryPresentsAtURL:_localDocumentsURL
+    [self synchronousEnsureThatDirectoryPresentsAtURL:localDocumentsURL
                                             comletion:^(NSError *error) {
          if (error != nil) {
              NSLog(@"[CDBiCloudReadyDocumentsContainer] could not resolve local documents URL %@\

@@ -35,6 +35,7 @@
  Contains all documents that present in container
 **/
 
+@property (assign, nonatomic, readonly, getter=isiCloudDocumentsDownloaded) BOOL iCloudDocumentsDownloaded;
 @property (strong, nonatomic, readonly, nonnull) NSArray<CDBDocument *> * cloudDocuments;
 @property (strong, nonatomic, readonly, nonnull) NSArray<NSString *> * cloudDocumentNames;
 

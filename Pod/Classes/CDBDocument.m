@@ -78,6 +78,12 @@
 
 #pragma mark Loading and Saving
 
+- (NSDate *)fileModificationDate {
+    NSFileVersion * currentVersion = [NSFileVersion currentVersionOfItemAtURL:self.fileURL];
+    NSDate * result = currentVersion.modificationDate;
+    return result;
+}
+
 - (id)contentsForType:(NSString *)typeName
                 error:(NSError **)outError {
     NSData * result = self.contents;
@@ -105,15 +111,19 @@
 - (NSString *)description {
     NSString * result = [NSString stringWithFormat:
                         @"[%@:<%@>] %@\
-                        \n fileURL: %@\
-                        \n ubiquitous: %@\
-                        \n documentState: %@\
-                        \n fileState: %@ %@",
+                        \r fileURL: %@\
+                        \r ubiquitous: %@\
+                        \r documentState: %@\
+                        \r fileState: %@ %@\
+                        \r modifiedDate: %@\
+                        \r fileSize: %.2f MB",
                         NSStringFromClass([self class]), @(self.hash), self.localizedName,
                         self.fileURL,
                         self.isUbiquitous ? @"YES" : @"NO",
                         self.localizedDocumentState,
-                        StringFromCDBFileState(self.fileState), self.fileName];
+                        StringFromCDBFileState(self.fileState), self.fileName,
+                        self.fileModificationDate,
+                        (float)[(NSData *)self.contents length]/1024.0f/1024.0f];
     return result;
 }
 

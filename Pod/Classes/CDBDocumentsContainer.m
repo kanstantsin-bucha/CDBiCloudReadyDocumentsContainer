@@ -24,7 +24,6 @@
 @property (strong, nonatomic, readonly) NSFileManager * fileManager;
 @property (nonatomic, strong) NSURL * ubiquityContainer;
 
-@property (assign, nonatomic, readonly, getter=isiCloudDocumentsDownloaded) BOOL iCloudDocumentsDownloaded;
 @property (assign, nonatomic, readonly, getter=isiCloudOperable) BOOL iCloudOperable;
 
 @end
@@ -441,7 +440,7 @@
 #pragma mark Handle state changes
 
 - (void)changeStateTo:(CDBContaineriCloudState)state {
-    if (_state == state) {
+    if (self.state == state) {
         return;
     }
     

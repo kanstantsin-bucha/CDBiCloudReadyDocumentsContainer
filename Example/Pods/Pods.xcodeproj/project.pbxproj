@@ -7,90 +7,90 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		30995CA879AC50A27DB88BACF8584310 /* CDBDocumentsContainer.h in Headers */ = {isa = PBXBuildFile; fileRef = 163280038F894029D57E42B0162F3144 /* CDBDocumentsContainer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		00F1CC52B1CB6B7EB2A99F8A7C3F50EC /* CDBDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 384E746EFB1078CD6C876227302B3235 /* CDBDocument.m */; };
+		26939DC4C794DE792104B9B30B2E2D9B /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 11FC2627981CBDD4ABD974BAD0BBDB4F /* UIKit.framework */; };
+		316020317411122F818C873496FAAEA7 /* CDBDocument.h in Headers */ = {isa = PBXBuildFile; fileRef = D073663320C6EA45ED008772D28C2E22 /* CDBDocument.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		39CCE33D0156B44FF05005AA4B9E9832 /* Pods-CDBiCloudReadyDocumentsContainer_Tests-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 1720C2149DC903C6A222346E2C05C017 /* Pods-CDBiCloudReadyDocumentsContainer_Tests-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		3E3C21DA4629DB9683C322AEBF166C3A /* CDBiCloudReadyDocumentsContainer-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 615765E7BBE2D79CDFC5F399E9746CAD /* CDBiCloudReadyDocumentsContainer-dummy.m */; };
 		3EA9E98ED98D0D6571AB0276D9FD0AFE /* Pods-CDBiCloudReadyDocumentsContainer_Tests-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 440C568CACA4B5A3326753E2355D2ECE /* Pods-CDBiCloudReadyDocumentsContainer_Tests-dummy.m */; };
-		4EE098B618459464CEAB10EA033611F9 /* CDBDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = F978561A62A53B46164F255C51C6D523 /* CDBDocument.m */; };
-		5B97181265F342DA62007F56CE427683 /* CDBiCloudReadyDocumentsContainer.h in Headers */ = {isa = PBXBuildFile; fileRef = 9A2A338EE87FF54FB763121A7D675A30 /* CDBiCloudReadyDocumentsContainer.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		65A9D50380C9A48CC95473C537B9F73D /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB8514388F2C489725BD00B34F34F68A /* Foundation.framework */; };
-		67A515CE48F25CD67DEA593CC308E1D2 /* CDBDocumentsContainer.m in Sources */ = {isa = PBXBuildFile; fileRef = 8C0D41EA5EB7626B667283D34EF4D691 /* CDBDocumentsContainer.m */; };
-		87ADB5B8661A665935B839660E87D9CE /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 162E4224C3045FFF499257BD0FF60A59 /* MapKit.framework */; };
-		8B5782988726DAAD846D98003F8B547B /* CDBDocument.h in Headers */ = {isa = PBXBuildFile; fileRef = 6EC7798078685F4DD478136736C100F1 /* CDBDocument.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4E025FA83FA6A948F3E68AD924507486 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31A081DE1CCDDBC1D9317DFA1040928E /* Foundation.framework */; };
+		81B9CFA069D1E69524190CC92EB92CFA /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D5AC51A1D35BEA9B5E2B7479215D52D /* MapKit.framework */; };
+		84A837085718006EE2857DE5EA618646 /* CDBiCloudReadyDocumentsContainer-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 79A8D32C9C076AEA2D99C5B3580BBD73 /* CDBiCloudReadyDocumentsContainer-dummy.m */; };
+		86EF8C5C2B8EA7B48211CA951DA5C860 /* CDBDocumentsContainer.h in Headers */ = {isa = PBXBuildFile; fileRef = 4993F954DECCD583E15D13B7B5D1F2EB /* CDBDocumentsContainer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		92187380D1E10DE80468DB34A82DB075 /* Pods-CDBiCloudReadyDocumentsContainer_Example-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = D566F7129BE57074A2E6E7B179F4AB93 /* Pods-CDBiCloudReadyDocumentsContainer_Example-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9945445FE29B0F798A717FAF0F552CA3 /* Pods-CDBiCloudReadyDocumentsContainer_Example-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = C3BF90D181A0FBBA5BBE40D3859A6186 /* Pods-CDBiCloudReadyDocumentsContainer_Example-dummy.m */; };
-		AF6BC796BD2097C7F46F78CE3B6F8509 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 355C98C4327B9341C43BCB98D025511D /* UIKit.framework */; };
-		E12DD7AFD1ABDEB81993F48B4FA2C6BA /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB8514388F2C489725BD00B34F34F68A /* Foundation.framework */; };
-		E161814374448E1C25646F319B196D73 /* CDBiCloudReadyDocumentsContainer.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 90B71367ED2E3C8E05E1CBC3C9FE9B92 /* CDBiCloudReadyDocumentsContainer.bundle */; };
-		E42CF8E6E2E317EC89BDECF024A44733 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB8514388F2C489725BD00B34F34F68A /* Foundation.framework */; };
-		FBD6B3F9A996930292E48340D45E8AB3 /* CDBiCloudReadyDocumentsContainer-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = C90F50FBB1233B0767BA247C3492285B /* CDBiCloudReadyDocumentsContainer-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		9D7CCF2C75CA19FB63665FFCB4DE69E2 /* CDBiCloudReadyDocumentsContainer.bundle in Resources */ = {isa = PBXBuildFile; fileRef = D363DB0C5FB6E7539DC4AD22EA27ED8F /* CDBiCloudReadyDocumentsContainer.bundle */; };
+		A65BEC549FF610485424B16885AFCE66 /* CDBiCloudReadyDocumentsContainer-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = F6012EB81300197D15724B926E6CB4CE /* CDBiCloudReadyDocumentsContainer-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		BC4AAEDE599CCE4927F1F10B810AC543 /* CDBiCloudReadyDocumentsContainer.h in Headers */ = {isa = PBXBuildFile; fileRef = 1BEDC3F20DE3768F08B75D9F46D17B09 /* CDBiCloudReadyDocumentsContainer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		BC9D5776445B290498ECDBD69BCA0C45 /* CDBDocumentsContainer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D362B9404778161C28A6C0CE3B6B192 /* CDBDocumentsContainer.m */; };
+		E12DD7AFD1ABDEB81993F48B4FA2C6BA /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31A081DE1CCDDBC1D9317DFA1040928E /* Foundation.framework */; };
+		E42CF8E6E2E317EC89BDECF024A44733 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31A081DE1CCDDBC1D9317DFA1040928E /* Foundation.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		74FC948B740147711C6587C5E1DD55F0 /* PBXContainerItemProxy */ = {
+		8F9BF906AA49AB82E7D2F1502819C057 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = D41D8CD98F00B204E9800998ECF8427E /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 93476CEF5A0E349AB402E70BBF30902B;
+			remoteGlobalIDString = D4BB8588149624032B3962349B36A551;
+			remoteInfo = CDBiCloudReadyDocumentsContainer;
+		};
+		DDE9EF369D38BD82FA49A46AB4ABCCD1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D41D8CD98F00B204E9800998ECF8427E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D4BB8588149624032B3962349B36A551;
+			remoteInfo = CDBiCloudReadyDocumentsContainer;
+		};
+		ECCAD044E550FF8C0C63ED1EFF22AA85 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D41D8CD98F00B204E9800998ECF8427E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FB4EB5CCB1E7971AD576122141BC2412;
 			remoteInfo = "CDBiCloudReadyDocumentsContainer-CDBiCloudReadyDocumentsContainer";
-		};
-		AC25259CBBABD90C0ECE99D6F465033F /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = D41D8CD98F00B204E9800998ECF8427E /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 6E62DE2489FEA50C38487B18881B02A7;
-			remoteInfo = CDBiCloudReadyDocumentsContainer;
-		};
-		C104D94E7C0A71AADDF477621AB1D832 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = D41D8CD98F00B204E9800998ECF8427E /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 6E62DE2489FEA50C38487B18881B02A7;
-			remoteInfo = CDBiCloudReadyDocumentsContainer;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		07DBB776F51464A7F0CE3545CF5A64F5 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		162E4224C3045FFF499257BD0FF60A59 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.3.sdk/System/Library/Frameworks/MapKit.framework; sourceTree = DEVELOPER_DIR; };
-		163280038F894029D57E42B0162F3144 /* CDBDocumentsContainer.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = CDBDocumentsContainer.h; sourceTree = "<group>"; };
+		11FC2627981CBDD4ABD974BAD0BBDB4F /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.3.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		1720C2149DC903C6A222346E2C05C017 /* Pods-CDBiCloudReadyDocumentsContainer_Tests-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-CDBiCloudReadyDocumentsContainer_Tests-umbrella.h"; sourceTree = "<group>"; };
 		17B2B5067C90AC73FECD758E90221814 /* Pods-CDBiCloudReadyDocumentsContainer_Example-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-CDBiCloudReadyDocumentsContainer_Example-acknowledgements.plist"; sourceTree = "<group>"; };
+		1BEDC3F20DE3768F08B75D9F46D17B09 /* CDBiCloudReadyDocumentsContainer.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = CDBiCloudReadyDocumentsContainer.h; sourceTree = "<group>"; };
+		1D362B9404778161C28A6C0CE3B6B192 /* CDBDocumentsContainer.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = CDBDocumentsContainer.m; sourceTree = "<group>"; };
 		21E75E1DB84BF44B6422EB769CF5DF7A /* Pods-CDBiCloudReadyDocumentsContainer_Example-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-CDBiCloudReadyDocumentsContainer_Example-acknowledgements.markdown"; sourceTree = "<group>"; };
+		251A275F8F309BB02CC0116B856B868F /* CDBiCloudReadyDocumentsContainer.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CDBiCloudReadyDocumentsContainer.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		296862735D75C30B26E9ABAD2D7C60B5 /* CDBiCloudReadyDocumentsContainer-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "CDBiCloudReadyDocumentsContainer-prefix.pch"; sourceTree = "<group>"; };
 		2E5B7F0B3AC58A5A3F646C4E43A15E2A /* CDBiCloudReadyDocumentsContainer.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = "sourcecode.module-map"; path = CDBiCloudReadyDocumentsContainer.modulemap; sourceTree = "<group>"; };
-		355C98C4327B9341C43BCB98D025511D /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.3.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
+		31A081DE1CCDDBC1D9317DFA1040928E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.3.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		384E746EFB1078CD6C876227302B3235 /* CDBDocument.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = CDBDocument.m; sourceTree = "<group>"; };
 		3B91049F735DABD5A2E61635FDCC106D /* Pods_CDBiCloudReadyDocumentsContainer_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CDBiCloudReadyDocumentsContainer_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		440C568CACA4B5A3326753E2355D2ECE /* Pods-CDBiCloudReadyDocumentsContainer_Tests-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-CDBiCloudReadyDocumentsContainer_Tests-dummy.m"; sourceTree = "<group>"; };
 		45283D732FBC6ECE28AF9F6218A738A9 /* Pods-CDBiCloudReadyDocumentsContainer_Tests-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-CDBiCloudReadyDocumentsContainer_Tests-acknowledgements.markdown"; sourceTree = "<group>"; };
-		4B43A431F5E9CA568DCBAA0CBAA53633 /* CDBiCloudReadyDocumentsContainer-Private.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "CDBiCloudReadyDocumentsContainer-Private.xcconfig"; sourceTree = "<group>"; };
+		4993F954DECCD583E15D13B7B5D1F2EB /* CDBDocumentsContainer.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = CDBDocumentsContainer.h; sourceTree = "<group>"; };
 		4C110480400A780BF60C56869B78BDC6 /* Pods-CDBiCloudReadyDocumentsContainer_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-CDBiCloudReadyDocumentsContainer_Example.release.xcconfig"; sourceTree = "<group>"; };
-		615765E7BBE2D79CDFC5F399E9746CAD /* CDBiCloudReadyDocumentsContainer-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "CDBiCloudReadyDocumentsContainer-dummy.m"; sourceTree = "<group>"; };
 		6193D0497E73B91B8E987E349EC8BD28 /* Pods-CDBiCloudReadyDocumentsContainer_Example-resources.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-CDBiCloudReadyDocumentsContainer_Example-resources.sh"; sourceTree = "<group>"; };
 		625039CAD680498CB6FA9775CDCAFFFC /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6874B91E4499802A0427400E03E0D6F3 /* Pods-CDBiCloudReadyDocumentsContainer_Tests-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-CDBiCloudReadyDocumentsContainer_Tests-acknowledgements.plist"; sourceTree = "<group>"; };
-		6B0944E78233758B6F871E51CAFCE1B3 /* CDBiCloudReadyDocumentsContainer.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CDBiCloudReadyDocumentsContainer.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		6EC7798078685F4DD478136736C100F1 /* CDBDocument.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = CDBDocument.h; sourceTree = "<group>"; };
+		79A871FC634CB2755D16068237905427 /* CDBiCloudReadyDocumentsContainer-Private.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "CDBiCloudReadyDocumentsContainer-Private.xcconfig"; sourceTree = "<group>"; };
+		79A8D32C9C076AEA2D99C5B3580BBD73 /* CDBiCloudReadyDocumentsContainer-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "CDBiCloudReadyDocumentsContainer-dummy.m"; sourceTree = "<group>"; };
 		8056CD593AC73B5318E751AE99BCE0A9 /* Pods-CDBiCloudReadyDocumentsContainer_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-CDBiCloudReadyDocumentsContainer_Tests.debug.xcconfig"; sourceTree = "<group>"; };
-		8C0D41EA5EB7626B667283D34EF4D691 /* CDBDocumentsContainer.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = CDBDocumentsContainer.m; sourceTree = "<group>"; };
-		90B71367ED2E3C8E05E1CBC3C9FE9B92 /* CDBiCloudReadyDocumentsContainer.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CDBiCloudReadyDocumentsContainer.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		946EDBF0CAEA1E5A536C9887BC0ADF9D /* Pods-CDBiCloudReadyDocumentsContainer_Tests.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = "sourcecode.module-map"; path = "Pods-CDBiCloudReadyDocumentsContainer_Tests.modulemap"; sourceTree = "<group>"; };
-		9A2A338EE87FF54FB763121A7D675A30 /* CDBiCloudReadyDocumentsContainer.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = CDBiCloudReadyDocumentsContainer.h; sourceTree = "<group>"; };
+		9D5AC51A1D35BEA9B5E2B7479215D52D /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.3.sdk/System/Library/Frameworks/MapKit.framework; sourceTree = DEVELOPER_DIR; };
 		A299200D1CFEA35A4345D26A3A9DDCC1 /* Pods-CDBiCloudReadyDocumentsContainer_Example-frameworks.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-CDBiCloudReadyDocumentsContainer_Example-frameworks.sh"; sourceTree = "<group>"; };
 		A74271AAA9C5394A3AE9EC6C17BBB3F9 /* Pods-CDBiCloudReadyDocumentsContainer_Tests-frameworks.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-CDBiCloudReadyDocumentsContainer_Tests-frameworks.sh"; sourceTree = "<group>"; };
 		A7D2DD8C7E2C9101D1CF65A3B42DF451 /* Pods-CDBiCloudReadyDocumentsContainer_Tests-resources.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-CDBiCloudReadyDocumentsContainer_Tests-resources.sh"; sourceTree = "<group>"; };
-		AB8514388F2C489725BD00B34F34F68A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.3.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		B4D1BFCFD940B6CED8B05B8891E870F7 /* Pods-CDBiCloudReadyDocumentsContainer_Example.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = "sourcecode.module-map"; path = "Pods-CDBiCloudReadyDocumentsContainer_Example.modulemap"; sourceTree = "<group>"; };
 		B6A622835C45657ADFD6A2FC6B085515 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BA6428E9F66FD5A23C0A2E06ED26CD2F /* Podfile */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		C13ED4F6AFF9E22E290B692054747BFA /* Pods-CDBiCloudReadyDocumentsContainer_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-CDBiCloudReadyDocumentsContainer_Example.debug.xcconfig"; sourceTree = "<group>"; };
 		C3BF90D181A0FBBA5BBE40D3859A6186 /* Pods-CDBiCloudReadyDocumentsContainer_Example-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-CDBiCloudReadyDocumentsContainer_Example-dummy.m"; sourceTree = "<group>"; };
-		C90F50FBB1233B0767BA247C3492285B /* CDBiCloudReadyDocumentsContainer-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "CDBiCloudReadyDocumentsContainer-umbrella.h"; sourceTree = "<group>"; };
+		D073663320C6EA45ED008772D28C2E22 /* CDBDocument.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = CDBDocument.h; sourceTree = "<group>"; };
+		D363DB0C5FB6E7539DC4AD22EA27ED8F /* CDBiCloudReadyDocumentsContainer.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CDBiCloudReadyDocumentsContainer.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		D566F7129BE57074A2E6E7B179F4AB93 /* Pods-CDBiCloudReadyDocumentsContainer_Example-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-CDBiCloudReadyDocumentsContainer_Example-umbrella.h"; sourceTree = "<group>"; };
 		DB64099773AD9A5D3C73A50DDCFCC1E5 /* Pods_CDBiCloudReadyDocumentsContainer_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CDBiCloudReadyDocumentsContainer_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		EC1F18DCBA8ABE410EDA9DAE449FCBEF /* Pods-CDBiCloudReadyDocumentsContainer_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-CDBiCloudReadyDocumentsContainer_Tests.release.xcconfig"; sourceTree = "<group>"; };
 		F254ABBB04B03CCF55873305F0E2E983 /* CDBiCloudReadyDocumentsContainer.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = CDBiCloudReadyDocumentsContainer.xcconfig; sourceTree = "<group>"; };
-		F978561A62A53B46164F255C51C6D523 /* CDBDocument.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = CDBDocument.m; sourceTree = "<group>"; };
+		F6012EB81300197D15724B926E6CB4CE /* CDBiCloudReadyDocumentsContainer-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "CDBiCloudReadyDocumentsContainer-umbrella.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -102,6 +102,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		731CB385FA73C3663DC8070A30280F2F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4E025FA83FA6A948F3E68AD924507486 /* Foundation.framework in Frameworks */,
+				81B9CFA069D1E69524190CC92EB92CFA /* MapKit.framework in Frameworks */,
+				26939DC4C794DE792104B9B30B2E2D9B /* UIKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		88F3B22DC7A5A53D0904B0A438A2BC34 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -110,20 +120,10 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		BB1FE2A34E5B65586B4CFAB45F08F0DE /* Frameworks */ = {
+		A9E1BDB495910EF5E68701AB7857C155 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		CD5204108BE4C4B79CDEA0DE3DEE5227 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				65A9D50380C9A48CC95473C537B9F73D /* Foundation.framework in Frameworks */,
-				87ADB5B8661A665935B839660E87D9CE /* MapKit.framework in Frameworks */,
-				AF6BC796BD2097C7F46F78CE3B6F8509 /* UIKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -214,8 +214,8 @@
 		CCA510CFBEA2D207524CDA0D73C3B561 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				90B71367ED2E3C8E05E1CBC3C9FE9B92 /* CDBiCloudReadyDocumentsContainer.bundle */,
-				6B0944E78233758B6F871E51CAFCE1B3 /* CDBiCloudReadyDocumentsContainer.framework */,
+				D363DB0C5FB6E7539DC4AD22EA27ED8F /* CDBiCloudReadyDocumentsContainer.bundle */,
+				251A275F8F309BB02CC0116B856B868F /* CDBiCloudReadyDocumentsContainer.framework */,
 				3B91049F735DABD5A2E61635FDCC106D /* Pods_CDBiCloudReadyDocumentsContainer_Example.framework */,
 				DB64099773AD9A5D3C73A50DDCFCC1E5 /* Pods_CDBiCloudReadyDocumentsContainer_Tests.framework */,
 			);
@@ -227,10 +227,10 @@
 			children = (
 				2E5B7F0B3AC58A5A3F646C4E43A15E2A /* CDBiCloudReadyDocumentsContainer.modulemap */,
 				F254ABBB04B03CCF55873305F0E2E983 /* CDBiCloudReadyDocumentsContainer.xcconfig */,
-				4B43A431F5E9CA568DCBAA0CBAA53633 /* CDBiCloudReadyDocumentsContainer-Private.xcconfig */,
-				615765E7BBE2D79CDFC5F399E9746CAD /* CDBiCloudReadyDocumentsContainer-dummy.m */,
+				79A871FC634CB2755D16068237905427 /* CDBiCloudReadyDocumentsContainer-Private.xcconfig */,
+				79A8D32C9C076AEA2D99C5B3580BBD73 /* CDBiCloudReadyDocumentsContainer-dummy.m */,
 				296862735D75C30B26E9ABAD2D7C60B5 /* CDBiCloudReadyDocumentsContainer-prefix.pch */,
-				C90F50FBB1233B0767BA247C3492285B /* CDBiCloudReadyDocumentsContainer-umbrella.h */,
+				F6012EB81300197D15724B926E6CB4CE /* CDBiCloudReadyDocumentsContainer-umbrella.h */,
 				07DBB776F51464A7F0CE3545CF5A64F5 /* Info.plist */,
 			);
 			name = "Support Files";
@@ -240,11 +240,11 @@
 		D098EAC772A9526068E68E85689F7486 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				6EC7798078685F4DD478136736C100F1 /* CDBDocument.h */,
-				F978561A62A53B46164F255C51C6D523 /* CDBDocument.m */,
-				163280038F894029D57E42B0162F3144 /* CDBDocumentsContainer.h */,
-				8C0D41EA5EB7626B667283D34EF4D691 /* CDBDocumentsContainer.m */,
-				9A2A338EE87FF54FB763121A7D675A30 /* CDBiCloudReadyDocumentsContainer.h */,
+				D073663320C6EA45ED008772D28C2E22 /* CDBDocument.h */,
+				384E746EFB1078CD6C876227302B3235 /* CDBDocument.m */,
+				4993F954DECCD583E15D13B7B5D1F2EB /* CDBDocumentsContainer.h */,
+				1D362B9404778161C28A6C0CE3B6B192 /* CDBDocumentsContainer.m */,
+				1BEDC3F20DE3768F08B75D9F46D17B09 /* CDBiCloudReadyDocumentsContainer.h */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -261,9 +261,9 @@
 		F91E9FA7F982532B138A234315CF3DD4 /* iOS */ = {
 			isa = PBXGroup;
 			children = (
-				AB8514388F2C489725BD00B34F34F68A /* Foundation.framework */,
-				162E4224C3045FFF499257BD0FF60A59 /* MapKit.framework */,
-				355C98C4327B9341C43BCB98D025511D /* UIKit.framework */,
+				31A081DE1CCDDBC1D9317DFA1040928E /* Foundation.framework */,
+				9D5AC51A1D35BEA9B5E2B7479215D52D /* MapKit.framework */,
+				11FC2627981CBDD4ABD974BAD0BBDB4F /* UIKit.framework */,
 			);
 			name = iOS;
 			sourceTree = "<group>";
@@ -271,14 +271,14 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
-		46EF99E5E3154625ABF796B35F27CC15 /* Headers */ = {
+		108375F7C362FDF6BF4AC92D57CAA1D3 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8B5782988726DAAD846D98003F8B547B /* CDBDocument.h in Headers */,
-				30995CA879AC50A27DB88BACF8584310 /* CDBDocumentsContainer.h in Headers */,
-				FBD6B3F9A996930292E48340D45E8AB3 /* CDBiCloudReadyDocumentsContainer-umbrella.h in Headers */,
-				5B97181265F342DA62007F56CE427683 /* CDBiCloudReadyDocumentsContainer.h in Headers */,
+				316020317411122F818C873496FAAEA7 /* CDBDocument.h in Headers */,
+				86EF8C5C2B8EA7B48211CA951DA5C860 /* CDBDocumentsContainer.h in Headers */,
+				A65BEC549FF610485424B16885AFCE66 /* CDBiCloudReadyDocumentsContainer-umbrella.h in Headers */,
+				BC4AAEDE599CCE4927F1F10B810AC543 /* CDBiCloudReadyDocumentsContainer.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -301,41 +301,24 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		6E62DE2489FEA50C38487B18881B02A7 /* CDBiCloudReadyDocumentsContainer */ = {
+		D4BB8588149624032B3962349B36A551 /* CDBiCloudReadyDocumentsContainer */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 9AF66242AB0748B25F36834797F2B3CE /* Build configuration list for PBXNativeTarget "CDBiCloudReadyDocumentsContainer" */;
+			buildConfigurationList = 3477D36F821A0C24E5EB6AB4C6FA3970 /* Build configuration list for PBXNativeTarget "CDBiCloudReadyDocumentsContainer" */;
 			buildPhases = (
-				2C431722DDFE329D9AE3449134DE0A63 /* Sources */,
-				CD5204108BE4C4B79CDEA0DE3DEE5227 /* Frameworks */,
-				8CB2BE12E02CCF99A87301A0ABC86235 /* Resources */,
-				46EF99E5E3154625ABF796B35F27CC15 /* Headers */,
+				FEC7CC63727B43AC067264C663B56282 /* Sources */,
+				731CB385FA73C3663DC8070A30280F2F /* Frameworks */,
+				978F5CAA61B79BD58E78A0F396BA277E /* Resources */,
+				108375F7C362FDF6BF4AC92D57CAA1D3 /* Headers */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				0CF12393C51C227DBE9695616DF71985 /* PBXTargetDependency */,
+				A145B28A8A814F47A67AC3EC6733BD05 /* PBXTargetDependency */,
 			);
 			name = CDBiCloudReadyDocumentsContainer;
 			productName = CDBiCloudReadyDocumentsContainer;
-			productReference = 6B0944E78233758B6F871E51CAFCE1B3 /* CDBiCloudReadyDocumentsContainer.framework */;
+			productReference = 251A275F8F309BB02CC0116B856B868F /* CDBiCloudReadyDocumentsContainer.framework */;
 			productType = "com.apple.product-type.framework";
-		};
-		93476CEF5A0E349AB402E70BBF30902B /* CDBiCloudReadyDocumentsContainer-CDBiCloudReadyDocumentsContainer */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = B4D1045BE6A5061BD2925CA5301C5D64 /* Build configuration list for PBXNativeTarget "CDBiCloudReadyDocumentsContainer-CDBiCloudReadyDocumentsContainer" */;
-			buildPhases = (
-				69E9EC781CA5C00FEC0C437ED42EB85D /* Sources */,
-				BB1FE2A34E5B65586B4CFAB45F08F0DE /* Frameworks */,
-				4501E20EC54841DCEA0226B882913882 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = "CDBiCloudReadyDocumentsContainer-CDBiCloudReadyDocumentsContainer";
-			productName = "CDBiCloudReadyDocumentsContainer-CDBiCloudReadyDocumentsContainer";
-			productReference = 90B71367ED2E3C8E05E1CBC3C9FE9B92 /* CDBiCloudReadyDocumentsContainer.bundle */;
-			productType = "com.apple.product-type.bundle";
 		};
 		E08894F13361724B769D55AC9A5E3764 /* Pods-CDBiCloudReadyDocumentsContainer_Example */ = {
 			isa = PBXNativeTarget;
@@ -348,7 +331,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				E02FAF524B7E56FC34E931D5E1310F74 /* PBXTargetDependency */,
+				28EE766548FF25C09130DA2CA4F78245 /* PBXTargetDependency */,
 			);
 			name = "Pods-CDBiCloudReadyDocumentsContainer_Example";
 			productName = "Pods-CDBiCloudReadyDocumentsContainer_Example";
@@ -366,12 +349,29 @@
 			buildRules = (
 			);
 			dependencies = (
-				43E30C413396676B27FDC2F229B08A91 /* PBXTargetDependency */,
+				D22668280D35091FCB4A1BDC154697B5 /* PBXTargetDependency */,
 			);
 			name = "Pods-CDBiCloudReadyDocumentsContainer_Tests";
 			productName = "Pods-CDBiCloudReadyDocumentsContainer_Tests";
 			productReference = DB64099773AD9A5D3C73A50DDCFCC1E5 /* Pods_CDBiCloudReadyDocumentsContainer_Tests.framework */;
 			productType = "com.apple.product-type.framework";
+		};
+		FB4EB5CCB1E7971AD576122141BC2412 /* CDBiCloudReadyDocumentsContainer-CDBiCloudReadyDocumentsContainer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 11E04D347195DE9A6277CE40741C5E62 /* Build configuration list for PBXNativeTarget "CDBiCloudReadyDocumentsContainer-CDBiCloudReadyDocumentsContainer" */;
+			buildPhases = (
+				934CCC687A48FC384FEBAB2528433DB6 /* Sources */,
+				A9E1BDB495910EF5E68701AB7857C155 /* Frameworks */,
+				C587F355607FF4AFB391A984A236CFE0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "CDBiCloudReadyDocumentsContainer-CDBiCloudReadyDocumentsContainer";
+			productName = "CDBiCloudReadyDocumentsContainer-CDBiCloudReadyDocumentsContainer";
+			productReference = D363DB0C5FB6E7539DC4AD22EA27ED8F /* CDBiCloudReadyDocumentsContainer.bundle */;
+			productType = "com.apple.product-type.bundle";
 		};
 /* End PBXNativeTarget section */
 
@@ -394,8 +394,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				6E62DE2489FEA50C38487B18881B02A7 /* CDBiCloudReadyDocumentsContainer */,
-				93476CEF5A0E349AB402E70BBF30902B /* CDBiCloudReadyDocumentsContainer-CDBiCloudReadyDocumentsContainer */,
+				D4BB8588149624032B3962349B36A551 /* CDBiCloudReadyDocumentsContainer */,
+				FB4EB5CCB1E7971AD576122141BC2412 /* CDBiCloudReadyDocumentsContainer-CDBiCloudReadyDocumentsContainer */,
 				E08894F13361724B769D55AC9A5E3764 /* Pods-CDBiCloudReadyDocumentsContainer_Example */,
 				E4462E418CA9634575BEFD6D2593D165 /* Pods-CDBiCloudReadyDocumentsContainer_Tests */,
 			);
@@ -403,18 +403,18 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		4501E20EC54841DCEA0226B882913882 /* Resources */ = {
+		978F5CAA61B79BD58E78A0F396BA277E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9D7CCF2C75CA19FB63665FFCB4DE69E2 /* CDBiCloudReadyDocumentsContainer.bundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		8CB2BE12E02CCF99A87301A0ABC86235 /* Resources */ = {
+		C587F355607FF4AFB391A984A236CFE0 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E161814374448E1C25646F319B196D73 /* CDBiCloudReadyDocumentsContainer.bundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -429,16 +429,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		2C431722DDFE329D9AE3449134DE0A63 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				4EE098B618459464CEAB10EA033611F9 /* CDBDocument.m in Sources */,
-				67A515CE48F25CD67DEA593CC308E1D2 /* CDBDocumentsContainer.m in Sources */,
-				3E3C21DA4629DB9683C322AEBF166C3A /* CDBiCloudReadyDocumentsContainer-dummy.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		5AADFAFBC0C97007C68E7F4F5EEF6673 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -447,33 +437,43 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		69E9EC781CA5C00FEC0C437ED42EB85D /* Sources */ = {
+		934CCC687A48FC384FEBAB2528433DB6 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		FEC7CC63727B43AC067264C663B56282 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				00F1CC52B1CB6B7EB2A99F8A7C3F50EC /* CDBDocument.m in Sources */,
+				BC9D5776445B290498ECDBD69BCA0C45 /* CDBDocumentsContainer.m in Sources */,
+				84A837085718006EE2857DE5EA618646 /* CDBiCloudReadyDocumentsContainer-dummy.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		0CF12393C51C227DBE9695616DF71985 /* PBXTargetDependency */ = {
+		28EE766548FF25C09130DA2CA4F78245 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = CDBiCloudReadyDocumentsContainer;
+			target = D4BB8588149624032B3962349B36A551 /* CDBiCloudReadyDocumentsContainer */;
+			targetProxy = DDE9EF369D38BD82FA49A46AB4ABCCD1 /* PBXContainerItemProxy */;
+		};
+		A145B28A8A814F47A67AC3EC6733BD05 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = "CDBiCloudReadyDocumentsContainer-CDBiCloudReadyDocumentsContainer";
-			target = 93476CEF5A0E349AB402E70BBF30902B /* CDBiCloudReadyDocumentsContainer-CDBiCloudReadyDocumentsContainer */;
-			targetProxy = 74FC948B740147711C6587C5E1DD55F0 /* PBXContainerItemProxy */;
+			target = FB4EB5CCB1E7971AD576122141BC2412 /* CDBiCloudReadyDocumentsContainer-CDBiCloudReadyDocumentsContainer */;
+			targetProxy = ECCAD044E550FF8C0C63ED1EFF22AA85 /* PBXContainerItemProxy */;
 		};
-		43E30C413396676B27FDC2F229B08A91 /* PBXTargetDependency */ = {
+		D22668280D35091FCB4A1BDC154697B5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = CDBiCloudReadyDocumentsContainer;
-			target = 6E62DE2489FEA50C38487B18881B02A7 /* CDBiCloudReadyDocumentsContainer */;
-			targetProxy = AC25259CBBABD90C0ECE99D6F465033F /* PBXContainerItemProxy */;
-		};
-		E02FAF524B7E56FC34E931D5E1310F74 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = CDBiCloudReadyDocumentsContainer;
-			target = 6E62DE2489FEA50C38487B18881B02A7 /* CDBiCloudReadyDocumentsContainer */;
-			targetProxy = C104D94E7C0A71AADDF477621AB1D832 /* PBXContainerItemProxy */;
+			target = D4BB8588149624032B3962349B36A551 /* CDBiCloudReadyDocumentsContainer */;
+			targetProxy = 8F9BF906AA49AB82E7D2F1502819C057 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -509,18 +509,6 @@
 				STRIP_INSTALLED_PRODUCT = NO;
 				SYMROOT = "${SRCROOT}/../build";
 				VALIDATE_PRODUCT = YES;
-			};
-			name = Release;
-		};
-		04FC4612E3ACCD0D7C4BA503C62C54CB /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4B43A431F5E9CA568DCBAA0CBAA53633 /* CDBiCloudReadyDocumentsContainer-Private.xcconfig */;
-			buildSettings = {
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				PRODUCT_NAME = CDBiCloudReadyDocumentsContainer;
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				WRAPPER_EXTENSION = bundle;
 			};
 			name = Release;
 		};
@@ -560,18 +548,6 @@
 				ONLY_ACTIVE_ARCH = YES;
 				STRIP_INSTALLED_PRODUCT = NO;
 				SYMROOT = "${SRCROOT}/../build";
-			};
-			name = Debug;
-		};
-		2B0E186F30F2D58D977B07DC791BDC53 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4B43A431F5E9CA568DCBAA0CBAA53633 /* CDBiCloudReadyDocumentsContainer-Private.xcconfig */;
-			buildSettings = {
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				PRODUCT_NAME = CDBiCloudReadyDocumentsContainer;
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				WRAPPER_EXTENSION = bundle;
 			};
 			name = Debug;
 		};
@@ -662,6 +638,72 @@
 			};
 			name = Debug;
 		};
+		571809D3E916ECA0305B3A5D93F3E91C /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 79A871FC634CB2755D16068237905427 /* CDBiCloudReadyDocumentsContainer-Private.xcconfig */;
+			buildSettings = {
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				PRODUCT_NAME = CDBiCloudReadyDocumentsContainer;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				WRAPPER_EXTENSION = bundle;
+			};
+			name = Release;
+		};
+		702B7CA6A52BF273E0F27DADD96E5743 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 79A871FC634CB2755D16068237905427 /* CDBiCloudReadyDocumentsContainer-Private.xcconfig */;
+			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 0.0.1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 0.0.1;
+				DYLIB_CURRENT_VERSION = "$(CURRENT_PROJECT_VERSION)";
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_PREFIX_HEADER = "Target Support Files/CDBiCloudReadyDocumentsContainer/CDBiCloudReadyDocumentsContainer-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/CDBiCloudReadyDocumentsContainer/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MODULEMAP_FILE = "Target Support Files/CDBiCloudReadyDocumentsContainer/CDBiCloudReadyDocumentsContainer.modulemap";
+				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_NAME = CDBiCloudReadyDocumentsContainer;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		7C1CC4A1D427BAF4FD063563818B9DF8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 79A871FC634CB2755D16068237905427 /* CDBiCloudReadyDocumentsContainer-Private.xcconfig */;
+			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 0.0.1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 0.0.1;
+				DYLIB_CURRENT_VERSION = "$(CURRENT_PROJECT_VERSION)";
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_PREFIX_HEADER = "Target Support Files/CDBiCloudReadyDocumentsContainer/CDBiCloudReadyDocumentsContainer-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/CDBiCloudReadyDocumentsContainer/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MODULEMAP_FILE = "Target Support Files/CDBiCloudReadyDocumentsContainer/CDBiCloudReadyDocumentsContainer.modulemap";
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_NAME = CDBiCloudReadyDocumentsContainer;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
 		BE499D79EC3E111049D387FD42959678 /* Release */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4C110480400A780BF60C56869B78BDC6 /* Pods-CDBiCloudReadyDocumentsContainer_Example.release.xcconfig */;
@@ -691,63 +733,30 @@
 			};
 			name = Release;
 		};
-		E229A0FEDBF6CF1556D39C0FF663457F /* Release */ = {
+		C33C6B9010BCA8D10D4B9243F22375DB /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4B43A431F5E9CA568DCBAA0CBAA53633 /* CDBiCloudReadyDocumentsContainer-Private.xcconfig */;
+			baseConfigurationReference = 79A871FC634CB2755D16068237905427 /* CDBiCloudReadyDocumentsContainer-Private.xcconfig */;
 			buildSettings = {
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 0.0.1;
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 0.0.1;
-				DYLIB_CURRENT_VERSION = "$(CURRENT_PROJECT_VERSION)";
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_PREFIX_HEADER = "Target Support Files/CDBiCloudReadyDocumentsContainer/CDBiCloudReadyDocumentsContainer-prefix.pch";
-				INFOPLIST_FILE = "Target Support Files/CDBiCloudReadyDocumentsContainer/Info.plist";
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				MODULEMAP_FILE = "Target Support Files/CDBiCloudReadyDocumentsContainer/CDBiCloudReadyDocumentsContainer.modulemap";
-				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_NAME = CDBiCloudReadyDocumentsContainer;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
-			};
-			name = Release;
-		};
-		EEB2300E7EF7A2CA4C904E2DB16BA618 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4B43A431F5E9CA568DCBAA0CBAA53633 /* CDBiCloudReadyDocumentsContainer-Private.xcconfig */;
-			buildSettings = {
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 0.0.1;
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 0.0.1;
-				DYLIB_CURRENT_VERSION = "$(CURRENT_PROJECT_VERSION)";
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_PREFIX_HEADER = "Target Support Files/CDBiCloudReadyDocumentsContainer/CDBiCloudReadyDocumentsContainer-prefix.pch";
-				INFOPLIST_FILE = "Target Support Files/CDBiCloudReadyDocumentsContainer/Info.plist";
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				MODULEMAP_FILE = "Target Support Files/CDBiCloudReadyDocumentsContainer/CDBiCloudReadyDocumentsContainer.modulemap";
-				MTL_ENABLE_DEBUG_INFO = YES;
-				PRODUCT_NAME = CDBiCloudReadyDocumentsContainer;
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
+				WRAPPER_EXTENSION = bundle;
 			};
 			name = Debug;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		11E04D347195DE9A6277CE40741C5E62 /* Build configuration list for PBXNativeTarget "CDBiCloudReadyDocumentsContainer-CDBiCloudReadyDocumentsContainer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C33C6B9010BCA8D10D4B9243F22375DB /* Debug */,
+				571809D3E916ECA0305B3A5D93F3E91C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		2D8E8EC45A3A1A1D94AE762CB5028504 /* Build configuration list for PBXProject "Pods" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -757,29 +766,20 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		3477D36F821A0C24E5EB6AB4C6FA3970 /* Build configuration list for PBXNativeTarget "CDBiCloudReadyDocumentsContainer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				702B7CA6A52BF273E0F27DADD96E5743 /* Debug */,
+				7C1CC4A1D427BAF4FD063563818B9DF8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		6A100490D4759FE658CB7DDAEE7EF14F /* Build configuration list for PBXNativeTarget "Pods-CDBiCloudReadyDocumentsContainer_Example" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2B55AE377423A158EC3279DC1A58A7CC /* Debug */,
 				BE499D79EC3E111049D387FD42959678 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		9AF66242AB0748B25F36834797F2B3CE /* Build configuration list for PBXNativeTarget "CDBiCloudReadyDocumentsContainer" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				EEB2300E7EF7A2CA4C904E2DB16BA618 /* Debug */,
-				E229A0FEDBF6CF1556D39C0FF663457F /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		B4D1045BE6A5061BD2925CA5301C5D64 /* Build configuration list for PBXNativeTarget "CDBiCloudReadyDocumentsContainer-CDBiCloudReadyDocumentsContainer" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				2B0E186F30F2D58D977B07DC791BDC53 /* Debug */,
-				04FC4612E3ACCD0D7C4BA503C62C54CB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

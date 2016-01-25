@@ -596,9 +596,10 @@
 #pragma mark Logging
 
 - (void)logMetadataQueryNotification:(NSNotification *)notification {
-#ifndef DEBUG
-    return;
-#endif
+    if (self.verbose == NO) {
+        return;
+    }
+    
     [notification.userInfo enumerateKeysAndObjectsUsingBlock:^(NSString *  _Nonnull change, NSArray *  _Nonnull metadataItems, BOOL * _Nonnull stop) {
         if (metadataItems.count == 0) {
             return;
@@ -617,7 +618,7 @@
 - (void)logMetadataItem:(NSMetadataItem *)item {
     NSNumber *isUbiquitous = [item valueForAttribute:NSMetadataItemIsUbiquitousKey];
     NSNumber *hasUnresolvedConflicts = [item valueForAttribute:NSMetadataUbiquitousItemHasUnresolvedConflictsKey];
-    NSNumber *isDownloaded = [item valueForAttribute:NSMetadataUbiquitousItemIsDownloadedKey];
+    NSString *isDownloaded = [item valueForAttribute:NSMetadataUbiquitousItemDownloadingStatusKey];
     NSNumber *isDownloading = [item valueForAttribute:NSMetadataUbiquitousItemIsDownloadingKey];
     NSNumber *isUploaded = [item valueForAttribute:NSMetadataUbiquitousItemIsUploadedKey];
     NSNumber *isUploading = [item valueForAttribute:NSMetadataUbiquitousItemIsUploadingKey];

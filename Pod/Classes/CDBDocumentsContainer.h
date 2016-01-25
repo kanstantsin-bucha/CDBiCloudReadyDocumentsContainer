@@ -17,6 +17,12 @@
 @interface CDBDocumentsContainer : NSObject
 
 /**
+ @brief: Use this option to enable verbose logging
+**/
+
+@property (assign, nonatomic) BOOL verbose;
+
+/**
  This is the URL where local documents container points (where local files stored)
  By default it points to local Documents directory
  App makes attempt to create this path if it doesn't exist

@@ -112,11 +112,16 @@
 }
 
 - (void)handleMetadataQueryDidUpdateNotification:(NSNotification *)notification {
+    [self.metadataQuery disableUpdates];
     [self updateFiles];
+    [self logMetadataQueryNotification:notification];
+    [self.metadataQuery enableUpdates];
 }
 
 - (void)handleMetadataQueryDidFinishGatheringNotification:(NSNotification *)notification {
+    [self.metadataQuery disableUpdates];
     [self updateFiles];
+    [self.metadataQuery enableUpdates];
 }
 
 #pragma mark - Public -
@@ -586,6 +591,55 @@
     NSURL * result = [self.localDocumentsURL URLByAppendingPathComponent:fileName
                                                              isDirectory:NO];
     return result;
+}
+
+#pragma mark Logging
+
+- (void)logMetadataQueryNotification:(NSNotification *)notification {
+#ifndef DEBUG
+    return;
+#endif
+    [notification.userInfo enumerateKeysAndObjectsUsingBlock:^(NSString *  _Nonnull change, NSArray *  _Nonnull metadataItems, BOOL * _Nonnull stop) {
+        if (metadataItems.count == 0) {
+            return;
+        }
+        NSLog(@"Change %@: ==============================\r", change);
+        for (NSMetadataItem *metadataItem in metadataItems) {
+            if ([metadataItem isKindOfClass:[NSMetadataItem class]] == NO) {
+                continue;
+            }
+            
+            [self logMetadataItem:metadataItem];
+        }
+    }];
+}
+
+- (void)logMetadataItem:(NSMetadataItem *)item {
+    NSNumber *isUbiquitous = [item valueForAttribute:NSMetadataItemIsUbiquitousKey];
+    NSNumber *hasUnresolvedConflicts = [item valueForAttribute:NSMetadataUbiquitousItemHasUnresolvedConflictsKey];
+    NSNumber *isDownloaded = [item valueForAttribute:NSMetadataUbiquitousItemIsDownloadedKey];
+    NSNumber *isDownloading = [item valueForAttribute:NSMetadataUbiquitousItemIsDownloadingKey];
+    NSNumber *isUploaded = [item valueForAttribute:NSMetadataUbiquitousItemIsUploadedKey];
+    NSNumber *isUploading = [item valueForAttribute:NSMetadataUbiquitousItemIsUploadingKey];
+    NSNumber *percentDownloaded = [item valueForAttribute:NSMetadataUbiquitousItemPercentDownloadedKey];
+    NSNumber *percentUploaded = [item valueForAttribute:NSMetadataUbiquitousItemPercentUploadedKey];
+    NSURL *url = [item valueForAttribute:NSMetadataItemURLKey];
+    
+    BOOL documentExists = [[NSFileManager defaultManager] fileExistsAtPath:[url path]];
+    
+    NSLog(@"documentExists:%i - %@\
+          \r isUbiquitous:%@ hasUnresolvedConflicts:%@\
+          \r isDownloaded:%@ isDownloading:%@ isUploaded:%@ isUploading:%@\
+          \r %%downloaded:%@ %%uploaded:%@",
+            documentExists, url,
+            isUbiquitous,
+            hasUnresolvedConflicts,
+            isDownloaded,
+            isDownloading,
+            isUploaded,
+            isUploading,
+            percentDownloaded,
+            percentUploaded);
 }
 
 

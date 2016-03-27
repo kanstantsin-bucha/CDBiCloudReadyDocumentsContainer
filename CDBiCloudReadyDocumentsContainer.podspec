@@ -6,7 +6,7 @@
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html
 #
 
-@version = "0.0.2"
+@version = "0.0.3"
 
 Pod::Spec.new do |s|
   s.name             = "CDBiCloudReadyDocumentsContainer"
@@ -38,11 +38,7 @@ Pod::Spec.new do |s|
   s.requires_arc = true
 
   s.source_files = 'Pod/Classes/**/*'
-  s.resource_bundles = {
-    'CDBiCloudReadyDocumentsContainer' => ['Pod/Assets/*.png']
-  }
-
   # s.public_header_files = 'Pod/Classes/**/*.h'
-  s.frameworks = 'UIKit', 'MapKit'
+  s.frameworks = 'UIKit'
   # s.dependency 'AFNetworking', '~> 2.3'
 end

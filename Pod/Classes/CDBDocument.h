@@ -9,9 +9,7 @@
 
 
 #import "CDBiCloudReadyDocumentsContainer.h"
-
-
-@protocol CDBDocumentDelegate;
+#import "CDBiCloudReadyConstants.h"
 
 
 @interface CDBDocument : UIDocument
@@ -54,12 +52,5 @@
                      completion:(CDBiCloudCompletion _Nonnull)completion;
 
 - (NSError * _Nonnull)iCloudDocumentNotOperableError;
-
-@end
-
-
-@protocol CDBDocumentDelegate <NSObject>
-
-- (void)didAutoresolveConflictInCDBDocument:(CDBDocument * _Nonnull)document;
 
 @end

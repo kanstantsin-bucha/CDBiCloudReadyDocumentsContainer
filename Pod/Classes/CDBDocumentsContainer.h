@@ -10,6 +10,7 @@
 
 
 #import "CDBiCloudReadyDocumentsContainer.h"
+#import "CDBiCloudReadyConstants.h"
 
 
 @protocol CDBDocumentsContainerDelegate;

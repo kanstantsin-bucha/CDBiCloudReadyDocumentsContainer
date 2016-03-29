@@ -16,14 +16,22 @@
 
 #pragma mark - Life cycle -
 
-- (instancetype)initWithFileURL:(NSURL *)url {
+- (instancetype)initWithFileURL:(NSURL *)url
+                       delegate:(id<CDBDocumentDelegate>)delegate {
     self = [super initWithFileURL:url];
     if (self) {
+        _delegate = delegate;
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(handleUIDocumentStateChangedNotification:)
                                                      name:UIDocumentStateChangedNotification
                                                    object:self];
     }
+    return self;
+}
+
+- (instancetype)initWithFileURL:(NSURL *)url {
+    self = [self initWithFileURL:url
+                        delegate:nil];
     
     return self;
 }
@@ -40,6 +48,10 @@
     }
     
     [self resolveConflict];
+    
+    if ([self.delegate respondsToSelector:@selector(didAutoresolveConflictInCDBDocument:)]) {
+        [self.delegate didAutoresolveConflictInCDBDocument:self];
+    }
 }
 
 #pragma mark - Public -

@@ -7,6 +7,10 @@
 
 
 @interface CDBDocumentsContainer ()
+<
+CDBDocumentDelegate
+>
+
 
 @property (copy, nonatomic) NSString * containerID;
 @property (copy, nonatomic) NSString * documentsDirectoryPath;
@@ -122,6 +126,20 @@
     [self.metadataQuery disableUpdates];
     [self updateFiles];
     [self.metadataQuery enableUpdates];
+}
+
+#pragma mark - Protocols -
+
+#pragma mark CDBDocumentDelegate
+
+- (void)didAutoresolveConflictInCDBDocument:(CDBDocument *)document {
+    __weak typeof(self) wself = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if ([wself.delegate respondsToSelector:@selector(container: didAutoresolveConflictInCDBDocument:)]) {
+            [wself.delegate container:wself
+  didAutoresolveConflictInCDBDocument:document];
+        }
+    });
 }
 
 #pragma mark - Public -
@@ -391,7 +409,8 @@
         NSURL * fileURL = [item valueForAttribute:NSMetadataItemURLKey];
         NSString * fileName = [item valueForAttribute:NSMetadataItemFSNameKey];
         
-        CDBDocument * document = [[CDBDocument alloc] initWithFileURL:fileURL];
+        CDBDocument * document = [[CDBDocument alloc] initWithFileURL:fileURL
+                                                             delegate:self];
         
         [documents addObject:document];
         [documentNames addObject:document.localizedName];

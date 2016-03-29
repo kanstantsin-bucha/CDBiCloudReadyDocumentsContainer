@@ -8,9 +8,10 @@
 #endif
 
 
-
-
 #import "CDBiCloudReadyDocumentsContainer.h"
+
+
+@protocol CDBDocumentDelegate;
 
 
 @interface CDBDocument : UIDocument
@@ -19,6 +20,7 @@
 @property (assign, nonatomic) CDBFileState fileState;
 @property (copy, nonatomic, readonly, nonnull) NSString * localizedDocumentState;
 @property (copy, nonatomic, readonly, nonnull) NSString * fileName;
+@property (weak, nonatomic, nullable) id<CDBDocumentDelegate> delegate;
 
 /**
  Returns YES if it is iCloud document
@@ -40,6 +42,10 @@
 **/
 @property (assign, nonatomic, readonly, getter=isDeleted) BOOL deleted;
 
+
+- (instancetype _Nullable)initWithFileURL:(NSURL * _Nonnull)url
+                                 delegate:(id<CDBDocumentDelegate> _Nullable)delegate NS_DESIGNATED_INITIALIZER __TVOS_PROHIBITED;
+
 /**
  Rename document file to fileName
  Fails if file with fileName already exist
@@ -48,5 +54,12 @@
                      completion:(CDBiCloudCompletion _Nonnull)completion;
 
 - (NSError * _Nonnull)iCloudDocumentNotOperableError;
+
+@end
+
+
+@protocol CDBDocumentDelegate <NSObject>
+
+- (void)didAutoresolveConflictInCDBDocument:(CDBDocument * _Nonnull)document;
 
 @end

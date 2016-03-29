@@ -141,5 +141,7 @@
 - (void)container:(CDBDocumentsContainer * _Nonnull)container
     iCloudStatedidChangeTo:(CDBContaineriCloudState)state;
 - (void)iCloudDocumentsDidChangeForContainer:(CDBDocumentsContainer * _Nonnull)container;
+- (void)container:(CDBDocumentsContainer * _Nonnull)container
+    didAutoresolveConflictInCDBDocument:(CDBDocument * _Nonnull)document;
 
 @end

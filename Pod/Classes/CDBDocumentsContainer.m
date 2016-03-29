@@ -7,10 +7,6 @@
 
 
 @interface CDBDocumentsContainer ()
-<
-CDBDocumentDelegate
->
-
 
 @property (copy, nonatomic) NSString * containerID;
 @property (copy, nonatomic) NSString * documentsDirectoryPath;
@@ -666,6 +662,11 @@ CDBDocumentDelegate
 #pragma mark - Property -
 
 #pragma mark Getter
+
+- (NSURL *)ubiquityDocumentsURL {
+    NSURL * result = self.ubiquityDocumentsDirectoryURL;
+    return result;
+}
 
 - (NSURL *)ubiquityDocumentsDirectoryURL {
     NSURL * result =

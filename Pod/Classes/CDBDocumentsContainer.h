@@ -14,7 +14,11 @@
 
 @protocol CDBDocumentsContainerDelegate;
 
+
 @interface CDBDocumentsContainer : NSObject
+<
+CDBDocumentDelegate
+>
 
 /**
  @brief: Use this option to enable verbose logging
@@ -30,6 +34,14 @@
 **/
 
 @property (copy, nonatomic, nullable) NSURL * localDocumentsURL;
+
+/**
+ This is the URL where cloud documents container points (where cloud files stored)
+ By default it points to cloud Documents directory
+ App makes attempt to create this path if it doesn't exist
+ **/
+
+@property (copy, nonatomic, readonly, nullable) NSURL * ubiquityDocumentsURL;
 
 /**
  Contains state of container container

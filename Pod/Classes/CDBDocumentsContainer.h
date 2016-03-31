@@ -88,14 +88,14 @@ CDBDocumentDelegate
  }];
  **/
 
-- (void)requestCloudAccess:(CDBiCloudAccessBlock _Nonnull)block;
+- (void)requestCloudAccess:(CDBiCloudAccessBlock _Nullable)block;
 
 /**
  Checks icloud state without starting synchronization
  Usually you don't need to call it becase initiateUsingContainerIdentifier: handle it for you
  **/
 
-- (void)performCloudStateCheckWithCompletion:(dispatch_block_t)completion;
+- (void)performCloudStateCheckWithCompletion:(dispatch_block_t _Nullable)completion;
 
 /**
  Add delegate to notify changes

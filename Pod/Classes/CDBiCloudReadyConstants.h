@@ -54,7 +54,7 @@ typedef NS_ENUM(NSUInteger, CDBFileState) {
 @class CDBDocument;
 
 
-typedef void (^CDBiCloudAccessBlock) (BOOL allDownloaded, CDBContaineriCloudState state, NSError * error);
+typedef void (^CDBiCloudAccessBlock) (BOOL allDownloaded, CDBContaineriCloudState state, NSError * _Nullable error);
 typedef void (^CDBiCloudCompletion) (NSError * _Nullable error);
 typedef void (^CDBiCloudDocumentCompletion) (CDBDocument * _Nullable document, NSError * _Nullable error);
 

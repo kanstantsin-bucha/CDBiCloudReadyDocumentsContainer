@@ -72,6 +72,32 @@ CDBDocumentDelegate
                  requestedFilesExtension:(NSString * _Nullable)extension;
 
 /**
+ Do your things with iCloud inside this block
+ First call of this block makes CDBDocumentsContainer start synchronization of ubiquitos container files
+ So if you don't want wait while loading occures call it right after initiateUsingContainerIdentifier: method
+ 
+ It returns allDownloaded only for CDBContaineriCloudDownloaded or CDBContaineriCloudCurrent state
+ That means iCloud documents are ready to roll
+ 
+ @example
+ 
+ [self requestCloudAccess:^(BOOL allDownloaded, VZiCloudState state){
+     if (allDownloaded) {
+         Do your job there
+     }
+ }];
+ **/
+
+- (void)requestCloudAccess:(CDBiCloudAccessBlock _Nonnull)block;
+
+/**
+ Checks icloud state without starting synchronization
+ Usually you don't need to call it becase initiateUsingContainerIdentifier: handle it for you
+ **/
+
+- (void)performCloudStateCheckWithCompletion:(dispatch_block_t)completion;
+
+/**
  Add delegate to notify changes
  **/
 
@@ -83,21 +109,6 @@ CDBDocumentDelegate
 
 - (void)removeDelegate:(id<CDBDocumentsContainerDelegate> _Nonnull)delegate;
 
-/**
- Do your things with iCloud inside this block
- It returns allDownloaded only for CDBContaineriCloudDownloaded or CDBContaineriCloudCurrent state
- That means iCloud documents are ready to roll
- 
- @example
- 
- [self requestCloudAccess:^(BOOL allDownloaded, VZiCloudState state){
-    if (allDownloaded) {
-        Do your job there
-    }
- }];
- **/
-
-- (void)requestCloudAccess:(CDBiCloudAccessBlock _Nonnull)block;
 
 /**
  To move document to the cloud, use YES, otherwise NO

@@ -15,16 +15,18 @@ typedef NS_ENUM(NSUInteger, CDBContaineriCloudState) {
     CDBContaineriCloudStateUndefined = 0,
     CDBContaineriCloudAccessDenied = 1,
     CDBContaineriCloudAccessGranted = 2,
-    CDBContaineriCloudRequestingInfo = 3, // Connection established, loading documents list
-    CDBContaineriCloudMetadata = 4, // Some of documents has only metadata
-    CDBContaineriCloudDownloaded = 5, // All documents downloaded but some of them has previous versions
-    CDBContaineriCloudCurrent = 6 // All documents in a local store has the most current state
+    CDBContaineriCloudUbiquitosContainerAvailable = 3, // Connection established
+    CDBContaineriCloudRequestingInfo = 4, // Loading documents list
+    CDBContaineriCloudMetadata = 5, // Some of documents has only metadata
+    CDBContaineriCloudDownloaded = 6, // All documents downloaded but some of them has previous versions
+    CDBContaineriCloudCurrent = 7 // All documents in a local store has the most current state
 };
 
 #define StringFromCDBContaineriCloudState(enum) (([@[\
 @"ContainerStateUndefined",\
 @"ContainerAccessDenied",\
 @"ContainerAccessGranted",\
+@"CDBContaineriCloudUbiquitosContainerAvailable",\
 @"ContainerRequestingInfo",\
 @"ContainerMetadata",\
 @"ContainerDownloaded",\
@@ -52,7 +54,7 @@ typedef NS_ENUM(NSUInteger, CDBFileState) {
 @class CDBDocument;
 
 
-typedef void (^CDBiCloudAccessBlock) (BOOL allDownloaded, CDBContaineriCloudState state);
+typedef void (^CDBiCloudAccessBlock) (BOOL allDownloaded, CDBContaineriCloudState state, NSError * error);
 typedef void (^CDBiCloudCompletion) (NSError * _Nullable error);
 typedef void (^CDBiCloudDocumentCompletion) (CDBDocument * _Nullable document, NSError * _Nullable error);
 

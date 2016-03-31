@@ -72,37 +72,8 @@
     if (extension.length == 0) {
         self.requestedFilesExtension = @"*";
     }
-}
-
-- (void)performCloudStateCheckWithCompletion:(dispatch_block_t)completion {
-    dispatch_async(dispatch_get_global_queue (DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
-        id cloudToken = [self.fileManager ubiquityIdentityToken];
-        if (cloudToken != nil) {
-            self.ubiquityContainer = [self.fileManager URLForUbiquityContainerIdentifier:self.containerID];
-            [self ensureThatUbiquitousDocumentsDirectoryPresents];
-        }
-        dispatch_async(dispatch_get_main_queue (), ^(void) {
-            
-            BOOL cloudIsAvailable = cloudToken != nil;
-            BOOL ubiquityContainerIsAvailable = self.ubiquityContainer != nil;
-            
-            CDBContaineriCloudState currentState;
-            
-            if (ubiquityContainerIsAvailable == NO) {
-                currentState = CDBContaineriCloudAccessGranted;
-            } else {
-                currentState = CDBContaineriCloudRequestingInfo;
-            }
-            if (cloudIsAvailable == NO) {
-                currentState = CDBContaineriCloudAccessDenied;
-            }
-            
-            [self changeStateTo:currentState];
-            if (completion != nil) {
-                completion();
-            }
-        });
-    });
+    
+    [self performCloudStateCheckWithCompletion:nil];
 }
 
 #pragma mark - Notifications -
@@ -140,20 +111,46 @@
 
 #pragma mark - Public -
 
+- (void)performCloudStateCheckWithCompletion:(dispatch_block_t)completion {
+    dispatch_async(dispatch_get_global_queue (DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
+        id cloudToken = [self.fileManager ubiquityIdentityToken];
+        if (cloudToken != nil) {
+            self.ubiquityContainer = [self.fileManager URLForUbiquityContainerIdentifier:self.containerID];
+            [self ensureThatUbiquitousDocumentsDirectoryPresents];
+        }
+        dispatch_async(dispatch_get_main_queue (), ^(void) {
+            
+            BOOL cloudIsAvailable = cloudToken != nil;
+            BOOL ubiquityContainerIsAvailable = self.ubiquityContainer != nil;
+            
+            CDBContaineriCloudState currentState;
+            
+            if (ubiquityContainerIsAvailable == NO) {
+                currentState = CDBContaineriCloudAccessGranted;
+            } else {
+                currentState = CDBContaineriCloudUbiquitosContainerAvailable;
+            }
+            
+            if (cloudIsAvailable == NO) {
+                currentState = CDBContaineriCloudAccessDenied;
+            }
+            
+            [self changeStateTo:currentState];
+            if (completion != nil) {
+                completion();
+            }
+        });
+    });
+}
+
 - (void)requestCloudAccess:(CDBiCloudAccessBlock)block {
-    if (block == nil) {
-        return;
-    }
-    
-    if (self.state == CDBContaineriCloudStateUndefined) {
-        __weak typeof (self) wself = self;
-        [self performCloudStateCheckWithCompletion:^{
-            block(wself.iCloudDocumentsDownloaded, wself.state);
-        }];
-        return;
-    }
-    
-    block(self.iCloudDocumentsDownloaded, self.state);
+    __weak typeof (self) wself = self;
+    [self initiateSynchronizationWithCompletion:^(NSError * _Nullable error) {
+        if (block == nil) {
+            return;
+        }
+        block(wself.iCloudDocumentsDownloaded, wself.state, error);
+    }];
 }
 
 - (void)addDelegate:(id<CDBDocumentsContainerDelegate> _Nonnull)delegate {
@@ -371,9 +368,33 @@
     return result;
 }
 
-#pragma mark Refresh documents
+#pragma mark Synchronize documents
 
-- (void)refreshContainer {
+- (void)initiateSynchronizationWithCompletion:(CDBiCloudCompletion)completion {
+    if (self.state >= CDBContaineriCloudRequestingInfo) {
+        if (completion != nil) {
+            completion(nil);
+        }
+    }
+    
+    if (self.state < CDBContaineriCloudUbiquitosContainerAvailable) {
+        [self performCloudStateCheckWithCompletion:^{
+            [self startSynchronizationWithCompletion:completion];
+        }];
+        return;
+    }
+    
+    [self startSynchronizationWithCompletion:completion];
+}
+
+- (void)startSynchronizationWithCompletion:(CDBiCloudCompletion)completion {
+    if (self.state < CDBContaineriCloudUbiquitosContainerAvailable) {
+        if (completion != nil) {
+            completion([self iCloudNotAcceessableErrorUsingState:self.state]);
+        }
+        return;
+    }
+    
     [self.metadataQuery setSearchScopes:@[NSMetadataQueryUbiquitousDocumentsScope]];
     [self.metadataQuery setPredicate:[self requestedFilesMetadataPredicate]];
     
@@ -391,6 +412,12 @@
         BOOL startedQuery = [self.metadataQuery startQuery];
         if (startedQuery == NO) {
             NSLog(@"[CDBiCloudReadyDocumentsContainer] Failed to start metadata query");
+        } else {
+            [self changeStateTo:CDBContaineriCloudRequestingInfo];
+        }
+        
+        if (completion != nil) {
+            completion(nil);
         }
     });
 }
@@ -446,6 +473,12 @@
     [self changeStateTo:state];
 }
 
+- (void)dissmissSynchronization {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [_metadataQuery stopQuery];
+    _metadataQuery = nil;
+}
+
 - (void)startDownloadingDocumentWithURL:(NSURL *)fileURL
                                 andName:(NSString *)name {
     NSError *error;
@@ -470,15 +503,20 @@
     self.state = state;
     switch (state) {
         case CDBContaineriCloudAccessGranted: {
-        
+            [self dissmissSynchronization];
         } break;
         
         case CDBContaineriCloudAccessDenied: {
+            [self dissmissSynchronization];
             [self showDeniedAccessAlert];
         } break;
         
+        case CDBContaineriCloudUbiquitosContainerAvailable: {
+            
+        } break;
+        
         case CDBContaineriCloudRequestingInfo: {
-            [self refreshContainer];
+
         } break;
         
         case CDBContaineriCloudMetadata: {

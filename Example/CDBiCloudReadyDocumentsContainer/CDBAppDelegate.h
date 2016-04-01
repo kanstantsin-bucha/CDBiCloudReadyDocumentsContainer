@@ -6,7 +6,11 @@
 //  Copyright (c) 2015 estbyright. All rights reserved.
 //
 
+#if __has_feature(objc_modules)
 @import UIKit;
+#else
+#import <UIKit/UIKit.h>
+#endif
 
 @interface CDBAppDelegate : UIResponder <UIApplicationDelegate>
 

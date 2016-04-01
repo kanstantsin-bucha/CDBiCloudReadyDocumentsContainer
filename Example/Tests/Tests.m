@@ -6,7 +6,12 @@
 //  Copyright (c) 2015 estbyright. All rights reserved.
 //
 
+#if __has_feature(objc_modules)
 @import XCTest;
+#else
+#import <XCTest/XCTest.h>
+#endif
+
 
 @interface Tests : XCTestCase
 

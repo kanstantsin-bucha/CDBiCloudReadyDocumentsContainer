@@ -41,8 +41,8 @@
 @property (assign, nonatomic, readonly, getter=isDeleted) BOOL deleted;
 
 
-- (instancetype _Nullable)initWithFileURL:(NSURL * _Nonnull)url
-                                 delegate:(id<CDBDocumentDelegate> _Nullable)delegate NS_DESIGNATED_INITIALIZER __TVOS_PROHIBITED;
++ (instancetype _Nullable)documentWithFileURL:(NSURL * _Nonnull)url
+                                     delegate:(id<CDBDocumentDelegate> _Nullable)delegate;
 
 /**
  Rename document file to fileName

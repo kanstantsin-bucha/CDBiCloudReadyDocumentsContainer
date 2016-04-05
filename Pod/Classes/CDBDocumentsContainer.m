@@ -182,9 +182,7 @@
         
         [self makeClosedDocument:document
                       ubiquitous:ubiquitous
-                           error:&error];
-        
-        completion(error);
+                      completion:completion];
     };
     
     if (document.isClosed) {
@@ -332,26 +330,44 @@
 
 - (void)makeClosedDocument:(CDBDocument * _Nonnull)document
                 ubiquitous:(BOOL)ubiquitous
-                     error:(NSError *__autoreleasing *)error {
+                completion:(CDBiCloudCompletion _Nonnull)completion {
     if (self.iCloudOperable == NO) {
-        *error = [self iCloudNotAcceessableErrorUsingState:self.state];
+        if (completion != nil) {
+            completion([self iCloudNotAcceessableErrorUsingState:self.state]);
+        }
         return;
     }
     
     NSURL * ubiquitosURL = [self ubiquityDocumentFileURLUsingFileName:document.fileName];
     NSURL * localURL = [self localDocumentFileURLUsingFileName:document.fileName];
-    NSURL * sourceURL = ubiquitous ? document.fileURL
-                                   : ubiquitosURL;
     NSURL * destinationURL = ubiquitous ? ubiquitosURL
                                         : localURL;
-    
-    BOOL result = [self.fileManager setUbiquitous:ubiquitous
-                                        itemAtURL:sourceURL
-                                   destinationURL:destinationURL
-                                            error:error];
-    if (result) {
-        [document presentedItemDidMoveToURL:destinationURL];
-    }
+    void (^accessor)(NSURL *, NSURL *) = ^(NSURL * newReadingURL, NSURL * newWritingURL) {
+        NSError * error = nil;
+        BOOL result = [self.fileManager setUbiquitous:ubiquitous
+                                            itemAtURL:newReadingURL
+                                       destinationURL:newWritingURL
+                                                error:&error];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (result) {
+                [document presentedItemDidMoveToURL:newWritingURL];
+            }
+            
+            if (completion != nil) {
+                completion(error);
+            }
+        });
+    };
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
+        NSError * coordinationError = nil;
+        NSFileCoordinator * fileCoordinator = [[NSFileCoordinator alloc] initWithFilePresenter:document];
+        [fileCoordinator coordinateWritingItemAtURL:document.fileURL
+                                            options:NSFileCoordinatorWritingForMoving
+                                   writingItemAtURL:destinationURL
+                                            options:NSFileCoordinatorWritingForReplacing
+                                              error:&coordinationError
+                                         byAccessor:accessor];
+    });
 }
 
 - (CDBDocument *)documentWithAvailableFileURL:(NSURL *)fileURL
@@ -432,8 +448,8 @@
         NSURL * fileURL = [item valueForAttribute:NSMetadataItemURLKey];
         NSString * fileName = [item valueForAttribute:NSMetadataItemFSNameKey];
         
-        CDBDocument * document = [[CDBDocument alloc] initWithFileURL:fileURL
-                                                             delegate:self];
+        CDBDocument * document = [CDBDocument documentWithFileURL:fileURL
+                                                         delegate:self];
         
         [documents addObject:document];
         [documentNames addObject:document.localizedName];
@@ -727,7 +743,7 @@
 }
 
 - (NSFileManager *)fileManager {
-    NSFileManager * result = [NSFileManager defaultManager];
+    NSFileManager * result = [NSFileManager new];
     return result;
 }
 

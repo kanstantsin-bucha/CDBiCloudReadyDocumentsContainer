@@ -1,5 +1,6 @@
 #import <UIKit/UIKit.h>
 
+#import "CDBCoreDataStore.h"
 #import "CDBDocument.h"
 #import "CDBDocumentsContainer.h"
 #import "CDBiCloudReadyConstants.h"

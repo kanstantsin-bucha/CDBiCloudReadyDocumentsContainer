@@ -178,8 +178,6 @@
             return;
         }
         
-        NSError * error = nil;
-        
         [self makeClosedDocument:document
                       ubiquitous:ubiquitous
                       completion:completion];

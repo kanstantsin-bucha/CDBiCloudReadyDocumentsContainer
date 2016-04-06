@@ -12,6 +12,7 @@
 
 #import "CDBDocumentsContainer.h"
 #import "CDBDocument.h"
+#import "CDBCoreDataStore.h"
 
 
 

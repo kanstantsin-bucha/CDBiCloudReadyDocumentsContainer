@@ -466,7 +466,7 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
         && CDBCheckStoreState(incomingState, CDBCoreDataStoreUbiquitosActive)) {
         [self postNotificationUsingName:CDBCoreDataStoreWillChangeNotification];
         
-        [self storeSystemProvidedUbiquitosStoreURL];
+        [self storeSystemProvidedUbiquitosStoreData];
         
         [self notifyDelegateThatStoreSwitchingToUbiquitous:YES];
         
@@ -700,7 +700,7 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
 }
 
 - (void)saveUbiquitosStoreToken:(id<NSObject, NSCoding, NSCopying>)storeToken
-               usingStoreName:(NSString *)storeName {
+                 usingStoreName:(NSString *)storeName {
     if (storeName.length == 0
         || storeToken == nil) {
         return;
@@ -722,10 +722,13 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
 
 #pragma mark ubiquitos url store
 
-- (void)storeSystemProvidedUbiquitosStoreURL {
+- (void)storeSystemProvidedUbiquitosStoreData {
     NSURL * URL = self.ubiqutosStore.URL;
     [self saveUbiquitosStoreURL:URL
                  usingStoreName:self.storeName];
+    id<NSObject,NSCopying,NSCoding> storeToken = [self currentUbiquitosStoreToken];
+    [self saveUbiquitosStoreToken:storeToken
+                   usingStoreName:self.storeName];
 }
 
 #pragma mark store coordinator

@@ -11,6 +11,7 @@
 
 #import "CDBiCloudReadyDocumentsContainer.h"
 #import "CDBiCloudReadyConstants.h"
+#import <CDBKit/CDBKit.h>
 
 
 @protocol CDBDocumentsContainerDelegate;
@@ -116,7 +117,7 @@ CDBDocumentDelegate
 
 - (void)makeDocument:(CDBDocument * _Nonnull)document
           ubiquitous:(BOOL)ubiquitous
-          completion:(CDBiCloudCompletion _Nonnull)completion;
+          completion:(CDBErrorCompletion _Nonnull)completion;
 
 /**
  Get document from local documents using file name
@@ -154,7 +155,7 @@ CDBDocumentDelegate
 **/
 
 - (void)deleteDocument:(CDBDocument * _Nonnull)document
-            completion:(CDBiCloudCompletion _Nonnull)completion;
+            completion:(CDBErrorCompletion _Nonnull)completion;
 @end
 
 

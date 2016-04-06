@@ -56,7 +56,7 @@
 #pragma mark - Public -
 
 - (void)renameFileUsingFileName:(NSString *)fileName
-                     completion:(CDBiCloudCompletion)completion {
+                     completion:(CDBErrorCompletion)completion {
     if (fileName.length == 0) {
         completion([[self class] fileNameCouldNotBeEmptyError]);
         return;
@@ -164,7 +164,7 @@
 }
 
 - (void)moveClosedFileToURL:(NSURL *)destinationURL
-                 completion:(CDBiCloudCompletion)completion {
+                 completion:(CDBErrorCompletion)completion {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
       
         __block NSError * error = nil;

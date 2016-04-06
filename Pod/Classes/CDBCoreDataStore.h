@@ -12,8 +12,6 @@
 
 
 #import "CDBiCloudReadyDocumentsContainer.h"
-#import "CDBiCloudReadyConstants.h"
-#import <CDBKit/CDBKit.h>
 
 
 extern NSString * _Nonnull CDBCoreDataStoreWillChangeNotification;
@@ -21,6 +19,9 @@ extern NSString * _Nonnull CDBCoreDataStoreDidChangeNotification;
 
 
 @protocol CDBCoreDataStoreDelegate;
+
+
+BOOL CDBCheckStoreState(CDBCoreDataStoreState state, NSUInteger option);
 
 
 @interface CDBCoreDataStore : NSObject
@@ -46,7 +47,7 @@ extern NSString * _Nonnull CDBCoreDataStoreDidChangeNotification;
  CDBCoreDataStoreUbiquitosActive to 0
  **/
 
-@property (assign, nonatomic, readonly) CDBCoreDataStoreState currentStoreState;
+@property (assign, nonatomic, readonly) CDBCoreDataStoreState state;
 
 
 @property (strong, nonatomic, readonly, nullable) NSURL * storeModelURL;

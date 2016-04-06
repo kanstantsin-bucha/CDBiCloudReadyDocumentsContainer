@@ -166,7 +166,7 @@
 
 - (void)makeDocument:(CDBDocument * _Nonnull)document
           ubiquitous:(BOOL)ubiquitous
-          completion:(CDBiCloudCompletion _Nonnull)completion {
+          completion:(CDBErrorCompletion _Nonnull)completion {
     if ([document isUbiquitous] == ubiquitous) {
         completion(nil);
         return;
@@ -267,7 +267,7 @@
 }
 
 - (void)deleteDocument:(CDBDocument * _Nonnull)document
-            completion:(CDBiCloudCompletion _Nonnull)completion {
+            completion:(CDBErrorCompletion _Nonnull)completion {
     if (document.isUbiquitous && self.iCloudOperable == NO) {
         completion([self iCloudNotAcceessableErrorUsingState:self.state]);
         return;
@@ -297,7 +297,7 @@
 #pragma mark Safe working with files
 
 - (void)deleteClosedDocument:(CDBDocument * _Nonnull)document
-                  completion:(CDBiCloudCompletion _Nonnull)completion {
+                  completion:(CDBErrorCompletion _Nonnull)completion {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
         __block NSError * error = nil;
         
@@ -328,7 +328,7 @@
 
 - (void)makeClosedDocument:(CDBDocument * _Nonnull)document
                 ubiquitous:(BOOL)ubiquitous
-                completion:(CDBiCloudCompletion _Nonnull)completion {
+                completion:(CDBErrorCompletion _Nonnull)completion {
     if (self.iCloudOperable == NO) {
         if (completion != nil) {
             completion([self iCloudNotAcceessableErrorUsingState:self.state]);
@@ -383,7 +383,7 @@
 
 #pragma mark Synchronize documents
 
-- (void)initiateSynchronizationWithCompletion:(CDBiCloudCompletion)completion {
+- (void)initiateSynchronizationWithCompletion:(CDBErrorCompletion)completion {
     if (self.state >= CDBContaineriCloudRequestingInfo) {
         if (completion != nil) {
             completion(nil);
@@ -400,7 +400,7 @@
     [self startSynchronizationWithCompletion:completion];
 }
 
-- (void)startSynchronizationWithCompletion:(CDBiCloudCompletion)completion {
+- (void)startSynchronizationWithCompletion:(CDBErrorCompletion)completion {
     if (self.state < CDBContaineriCloudUbiquitosContainerAvailable) {
         if (completion != nil) {
             completion([self iCloudNotAcceessableErrorUsingState:self.state]);
@@ -593,7 +593,7 @@
 }
 
 - (void)synchronousEnsureThatDirectoryPresentsAtURL:(NSURL *)URL
-                                          comletion:(CDBiCloudCompletion)completion {
+                                          comletion:(CDBErrorCompletion)completion {
     if (URL == nil) {
         if (completion != nil) {
             completion([self directoryUnacceptableURLErrorUsingURL:URL]);

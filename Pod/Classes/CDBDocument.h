@@ -10,6 +10,7 @@
 
 #import "CDBiCloudReadyDocumentsContainer.h"
 #import "CDBiCloudReadyConstants.h"
+#import <CDBKit/CDBKit.h>
 
 
 @interface CDBDocument : UIDocument
@@ -49,7 +50,7 @@
  Fails if file with fileName already exist
 **/
 - (void)renameFileUsingFileName:(NSString * _Nonnull)fileName
-                     completion:(CDBiCloudCompletion _Nonnull)completion;
+                     completion:(CDBErrorCompletion _Nonnull)completion;
 
 - (NSError * _Nonnull)iCloudDocumentNotOperableError;
 

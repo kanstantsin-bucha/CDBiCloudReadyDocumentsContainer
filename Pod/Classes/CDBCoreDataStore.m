@@ -347,6 +347,24 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
     }];
 }
 
+- (void)rebuildUbiquitosStoreFromUbiquitousContenWithCompletion:(CDBErrorCompletion _Nullable)completion {
+    NSDictionary * oldOptions = self.ubiquitosStoreOptions;
+    
+    NSMutableDictionary * rebuildOptions = [oldOptions mutableCopy];
+    rebuildOptions[NSPersistentStoreRebuildFromUbiquitousContentOption] = @(YES);
+    self.ubiquitosStoreOptions = [rebuildOptions copy];
+    [self dismissUbiquitosCoreDataStack];
+    
+    [self touch:self.ubiquitosStoreCoordinator];
+    
+    self.ubiquitosStoreOptions = oldOptions;
+    [self dismissUbiquitosCoreDataStack];
+    
+    if (completion != nil) {
+        completion(nil);
+    }
+}
+
 - (void)removeLocalUbiquitousContentWithCompletion:(CDBErrorCompletion _Nullable)completion {
     if ([[NSFileManager defaultManager] fileExistsAtPath:self.localCoreDataUbiquitySupportDirectoryURL.path] == NO) {
         return;

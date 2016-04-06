@@ -6,7 +6,7 @@
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html
 #
 
-@version = "0.1.0"
+@version = "0.9.0"
 
 Pod::Spec.new do |s|
   s.name             = "CDBiCloudReadyDocumentsContainer"
@@ -39,6 +39,6 @@ Pod::Spec.new do |s|
 
   s.source_files = 'Pod/Classes/**/*'
   # s.public_header_files = 'Pod/Classes/**/*.h'
-  s.frameworks = 'UIKit'
-  # s.dependency 'AFNetworking', '~> 2.3'
+  s.frameworks = 'UIKit', 'CoreData'
+  s.dependency 'CDBKit', '~> 0.0'
 end

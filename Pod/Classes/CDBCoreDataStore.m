@@ -348,17 +348,16 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
 }
 
 - (void)rebuildUbiquitosStoreFromUbiquitousContenWithCompletion:(CDBErrorCompletion _Nullable)completion {
-    NSDictionary * oldOptions = self.ubiquitosStoreOptions;
+    NSDictionary * options = self.ubiquitosStoreOptions;
     
-    NSMutableDictionary * rebuildOptions = [oldOptions mutableCopy];
+    NSMutableDictionary * rebuildOptions = [options mutableCopy];
     rebuildOptions[NSPersistentStoreRebuildFromUbiquitousContentOption] = @(YES);
     self.ubiquitosStoreOptions = [rebuildOptions copy];
     [self dismissUbiquitosCoreDataStack];
     
     [self touch:self.ubiquitosStoreCoordinator];
     
-    self.ubiquitosStoreOptions = oldOptions;
-    [self dismissUbiquitosCoreDataStack];
+    self.ubiquitosStoreOptions = options;
     
     if (completion != nil) {
         completion(nil);

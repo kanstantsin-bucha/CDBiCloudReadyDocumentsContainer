@@ -86,7 +86,8 @@ BOOL CDBCheckStoreState(CDBCoreDataStoreState state, NSUInteger option);
 /**
  * @brief
  * remove ubiquitos store and recreate it using cloud ubiquitos content
- * this method switch CDBCoreDataStore to local store automatically
+ * this method restart ubiquitos store using rebuild option
+ * so be aware of stright coping this store option - use ubiquitosStoreOptions instead
  **/
 
 - (void)rebuildUbiquitosStoreFromUbiquitousContenWithCompletion:(CDBErrorCompletion _Nullable)completion;

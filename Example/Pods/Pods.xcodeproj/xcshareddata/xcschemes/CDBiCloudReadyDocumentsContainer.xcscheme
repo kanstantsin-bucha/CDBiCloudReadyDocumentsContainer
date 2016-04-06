@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "DFA79B5604BFD2F2F020F1C2"
+               BlueprintIdentifier = "B26AFE549401E63E76444EF7"
                BuildableName = "CDBiCloudReadyDocumentsContainer.framework"
                BlueprintName = "CDBiCloudReadyDocumentsContainer"
                ReferencedContainer = "container:Pods.xcodeproj">

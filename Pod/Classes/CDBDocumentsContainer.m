@@ -340,31 +340,30 @@
     NSURL * localURL = [self localDocumentFileURLUsingFileName:document.fileName];
     NSURL * destinationURL = ubiquitous ? ubiquitosURL
                                         : localURL;
+    
+    __block NSError * error = nil;
     void (^accessor)(NSURL *, NSURL *) = ^(NSURL * newReadingURL, NSURL * newWritingURL) {
-        NSError * error = nil;
-        BOOL result = [self.fileManager setUbiquitous:ubiquitous
-                                            itemAtURL:newReadingURL
-                                       destinationURL:newWritingURL
-                                                error:&error];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (result) {
-                [document presentedItemDidMoveToURL:newWritingURL];
-            }
-            
-            if (completion != nil) {
-                completion(error);
-            }
-        });
+        [self.fileManager setUbiquitous:ubiquitous
+                              itemAtURL:newReadingURL
+                         destinationURL:newWritingURL
+                                  error:&error];
+        if (error == nil) {
+            [document presentedItemDidMoveToURL:newWritingURL];
+        }
     };
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
-        NSError * coordinationError = nil;
         NSFileCoordinator * fileCoordinator = [[NSFileCoordinator alloc] initWithFilePresenter:document];
         [fileCoordinator coordinateWritingItemAtURL:document.fileURL
                                             options:NSFileCoordinatorWritingForMoving
                                    writingItemAtURL:destinationURL
                                             options:NSFileCoordinatorWritingForReplacing
-                                              error:&coordinationError
+                                              error:&error
                                          byAccessor:accessor];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (completion != nil) {
+                completion(error);
+            }
+        });
     });
 }
 

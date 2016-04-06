@@ -1,5 +1,7 @@
 PODS:
-  - CDBiCloudReadyDocumentsContainer (0.1.0)
+  - CDBiCloudReadyDocumentsContainer (0.9.0):
+    - CDBKit (~> 0.0)
+  - CDBKit (0.0.2)
 
 DEPENDENCIES:
   - CDBiCloudReadyDocumentsContainer (from `../`)
@@ -9,6 +11,7 @@ EXTERNAL SOURCES:
     :path: ../
 
 SPEC CHECKSUMS:
-  CDBiCloudReadyDocumentsContainer: 0bdc65bebdf29b493d213aa6e916c92290bbc06e
+  CDBiCloudReadyDocumentsContainer: 4dc0eabddbf1a6ed617f79c1e1f2fc67d0f4938f
+  CDBKit: a623c30e928d5fd30718b276b40be9a3f5c33c2c
 
 COCOAPODS: 0.38.2

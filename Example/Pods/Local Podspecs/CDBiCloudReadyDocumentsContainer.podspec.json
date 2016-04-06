@@ -1,6 +1,6 @@
 {
   "name": "CDBiCloudReadyDocumentsContainer",
-  "version": "0.1.0",
+  "version": "0.9.0",
   "summary": "UIDocument CRUD container supposed to be used with iCloud Documents",
   "description": "UIDocument CRUD container maintains connection to iCloud and make delegates calls on it's' state changed.\nIt also provide a list of documents stored on the cloud and updates it in real time.\nUIDocument CRUD container also could create local documents and read, update, delete loacal and iCloud documents.\nIt also could move documents from a local directory to the cloud and vise versa.\nCDBDocument resolves conflicts automatically based on the latest version.\nCDBDocument could rename file of a document.\nCDBDocument provides document file states and user friendly properties to check them.",
   "homepage": "https://github.com/yocaminobien/CDBiCloudReadyDocumentsContainer",
@@ -10,7 +10,7 @@
   },
   "source": {
     "git": "https://github.com/yocaminobien/CDBiCloudReadyDocumentsContainer.git",
-    "tag": "0.1.0"
+    "tag": "0.9.0"
   },
   "social_media_url": "https://twitter.com/yocaminobien",
   "platforms": {
@@ -18,5 +18,13 @@
   },
   "requires_arc": true,
   "source_files": "Pod/Classes/**/*",
-  "frameworks": "UIKit"
+  "frameworks": [
+    "UIKit",
+    "CoreData"
+  ],
+  "dependencies": {
+    "CDBKit": [
+      "~> 0.0"
+    ]
+  }
 }

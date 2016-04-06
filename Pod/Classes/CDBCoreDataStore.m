@@ -29,13 +29,16 @@ NSString * _Nonnull CDBCoreDataStoreDidChangeNotification = @"CDBCoreDataStoreDi
 
 @property (strong, nonatomic, readwrite) NSManagedObjectContext * localContext;
 @property (strong, nonatomic, readwrite) NSPersistentStore * localStore;
-@property (strong, nonatomic, readwrite) NSURL * localStoreURL;
+@property (strong, nonatomic) NSURL * localStoreURL;
 @property (strong, nonatomic, readwrite) NSPersistentStoreCoordinator * localStoreCoordinator;
 
 @property (strong, nonatomic, readwrite) NSManagedObjectContext * ubiquitosContext;
 @property (strong, nonatomic, readwrite) NSPersistentStore * ubiqutosStore;
-@property (strong, nonatomic, readwrite) NSURL * ubiquitosStoreURL;
+@property (strong, nonatomic) NSURL * ubiquitosStoreURL;
 @property (strong, nonatomic, readwrite) NSPersistentStoreCoordinator * ubiquitosStoreCoordinator;
+
+@property (strong, nonatomic, readonly) NSURL * localCoreDataUbiquitySupportDirectoryURL;
+
 @end
 
 
@@ -208,9 +211,10 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
     return result;
 }
 
-- (NSURL *)localUbiquitySupportURL {
+- (NSURL *)localCoreDataUbiquitySupportDirectoryURL {
     NSURL * result =
-        [[self applicationDirectoryURLForPath:NSDocumentDirectory] URLByAppendingPathComponent:@"CoreDataUbiquitySupport"];
+        [[self applicationDirectoryURLForPath:NSLibraryDirectory] URLByAppendingPathComponent:@"CoreDataUbiquitySupport"
+                                                                                  isDirectory:YES];
     return result;
 }
 
@@ -285,7 +289,7 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
     [self changeStoreStateTo:state];
 }
 
-- (void)migrateUbiquitosStoreToLocalStore {
+- (void)replaceLocalStoreUsingUbiquitosOne {
     NSMutableDictionary * destinationOptions = [self.localStoreOptions mutableCopy];
     destinationOptions[NSPersistentStoreRemoveUbiquitousMetadataOption] = @YES;
     
@@ -326,9 +330,75 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
     self.ubiquitosContext = nil;
     self.ubiqutosStore = nil;
     self.ubiquitosStoreCoordinator = nil;
+    
+    CDBCoreDataStoreState state = [self loadCurrentStoreStateUsingStoreName:self.storeName];
+    
+    state = CDBRemoveStoreState(state, CDBCoreDataStoreUbiquitosConnected);
+    state = CDBRemoveStoreState(state, CDBCoreDataStoreUbiquitosActive);
+    
+    [self changeStoreStateTo:state];
 }
 
-#pragma mark - private - 
+- (void)mergeUbiquitousContentChangesUsing:(NSNotification *)changeNotification {
+    NSManagedObjectContext * context = self.ubiquitosContext;
+    [context performBlock:^{
+        [context mergeChangesFromContextDidSaveNotification:changeNotification];
+    }];
+}
+
+- (void)removeLocalUbiquitousContentWithCompletion:(CDBErrorCompletion _Nullable)completion {
+    if ([[NSFileManager defaultManager] fileExistsAtPath:self.localCoreDataUbiquitySupportDirectoryURL.path] == NO) {
+        return;
+    }
+    
+    __block NSError * error = nil;
+    void (^ accessor)(NSURL * writingURL)  = ^(NSURL* writingURL) {
+        [[NSFileManager new] removeItemAtURL:writingURL
+                                       error:&error];
+    };
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            [self dismissUbiquitosCoreDataStack];
+        });
+        
+        NSFileCoordinator * fileCoordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
+        
+        [fileCoordinator coordinateWritingItemAtURL:self.localCoreDataUbiquitySupportDirectoryURL
+                                            options:NSFileCoordinatorWritingForDeleting
+                                              error:nil
+                                         byAccessor:accessor];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (completion != nil) {
+                completion(error);
+            }
+        });
+    });
+}
+
+- (void)removeAllUbiquitousContentWithCompletion:(CDBErrorCompletion _Nullable)completion {
+    CDBCoreDataStoreState state = [self loadCurrentStoreStateUsingStoreName:self.storeName];
+    
+    state = CDBRemoveStoreState(state, CDBCoreDataStoreUbiquitosSelected);
+    state = CDBRemoveStoreState(state, CDBCoreDataStoreUbiquitosConnected);
+    state = CDBRemoveStoreState(state, CDBCoreDataStoreUbiquitosActive);
+    
+    [self changeStoreStateTo:state];
+    
+    [self dismissUbiquitosCoreDataStack];
+    
+    NSError * error = nil;
+    
+    [NSPersistentStoreCoordinator removeUbiquitousContentAndPersistentStoreAtURL:self.ubiquitosStoreURL
+                                                                         options:self.ubiquitosStoreOptions
+                                                                           error:&error];
+    
+    if (completion != nil) {
+        completion(error);
+    }
+}
+
+#pragma mark - private -
 
 #pragma mark store state changing
 
@@ -340,8 +410,9 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
     // check if cloud user changed and make app use local store if cloud not initiated yet
     CDBCoreDataStoreState state = [self loadCurrentStoreStateUsingStoreName:self.storeName];
     
-    // definately we not connected yet
+    // definately we not connected and not active yet
     state = CDBRemoveStoreState(state, CDBCoreDataStoreUbiquitosConnected);
+    state = CDBRemoveStoreState(state, CDBCoreDataStoreUbiquitosActive);
     
     if (state & CDBCoreDataStoreUbiquitosInitiated) {
         id token = [self currentUbiquitosStoreToken];
@@ -475,10 +546,7 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
         [self.delegate CDBCoreDataStore:self
          didImportUbiquitousContentChanges:changeNotification];
     } else {
-        NSManagedObjectContext * context = self.ubiquitosContext;
-        [context performBlock:^{
-            [context mergeChangesFromContextDidSaveNotification:changeNotification];
-        }];
+        [self mergeUbiquitousContentChangesUsing:changeNotification];
     }
     
     [self postNotificationUsingName:CDBCoreDataStoreDidChangeNotification];

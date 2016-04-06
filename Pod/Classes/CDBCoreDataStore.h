@@ -13,6 +13,7 @@
 
 #import "CDBiCloudReadyDocumentsContainer.h"
 #import "CDBiCloudReadyConstants.h"
+#import <CDBKit/CDBKit.h>
 
 
 extern NSString * _Nonnull CDBCoreDataStoreWillChangeNotification;
@@ -72,10 +73,16 @@ extern NSString * _Nonnull CDBCoreDataStoreDidChangeNotification;
                 storeModelURL:(NSURL * _Nonnull)modelURL;
 
 - (void)selectUbiquitos:(BOOL)ubiquitos;
-- (void)migrateUbiquitosStoreToLocalStore;
+
+
 
 - (void)dismissLocalCoreDataStack;
 - (void)dismissUbiquitosCoreDataStack;
+
+- (void)mergeUbiquitousContentChangesUsing:(NSNotification * _Nullable)changeNotification;
+- (void)replaceLocalStoreUsingUbiquitosOne;
+- (void)removeLocalUbiquitousContentWithCompletion:(CDBErrorCompletion _Nullable)completion;
+- (void)removeAllUbiquitousContentWithCompletion:(CDBErrorCompletion _Nullable)completion;
 
 - (NSPersistentStoreCoordinator * _Nullable)defaultStoreCoordinator;
 
@@ -100,8 +107,10 @@ extern NSString * _Nonnull CDBCoreDataStoreDidChangeNotification;
  * @brief
  * called when store imported cloud changes
  * you could provide your custom logic there
+ * after merging changes using [ mergeUbiquitousContentChangesUsing:] method 
+ *
  * if this method not implemented in delegate store use
- * basic changes merge approach from apple guidelines
+ * using [ mergeUbiquitousContentChangesUsing:] method automatically
  **/
 
 - (void)CDBCoreDataStore:(CDBCoreDataStore * _Nullable)store

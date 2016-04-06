@@ -327,16 +327,17 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
 }
 
 - (void)dismissUbiquitosCoreDataStack {
-    self.ubiquitosContext = nil;
-    self.ubiqutosStore = nil;
-    self.ubiquitosStoreCoordinator = nil;
-    
+
     CDBCoreDataStoreState state = [self loadCurrentStoreStateUsingStoreName:self.storeName];
     
     state = CDBRemoveStoreState(state, CDBCoreDataStoreUbiquitosConnected);
     state = CDBRemoveStoreState(state, CDBCoreDataStoreUbiquitosActive);
     
     [self changeStoreStateTo:state];
+    
+    self.ubiquitosContext = nil;
+    self.ubiqutosStore = nil;
+    self.ubiquitosStoreCoordinator = nil;
 }
 
 - (void)mergeUbiquitousContentChangesUsing:(NSNotification *)changeNotification {
@@ -359,6 +360,14 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
         dispatch_sync(dispatch_get_main_queue(), ^{
+            CDBCoreDataStoreState state = [self loadCurrentStoreStateUsingStoreName:self.storeName];
+            
+            state = CDBRemoveStoreState(state, CDBCoreDataStoreUbiquitosSelected);
+            state = CDBRemoveStoreState(state, CDBCoreDataStoreUbiquitosConnected);
+            state = CDBRemoveStoreState(state, CDBCoreDataStoreUbiquitosActive);
+            
+            [self changeStoreStateTo:state];
+            
             [self dismissUbiquitosCoreDataStack];
         });
         

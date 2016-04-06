@@ -81,7 +81,21 @@ extern NSString * _Nonnull CDBCoreDataStoreDidChangeNotification;
 
 - (void)mergeUbiquitousContentChangesUsing:(NSNotification * _Nullable)changeNotification;
 - (void)replaceLocalStoreUsingUbiquitosOne;
+
+/**
+ * @brief
+ * remove all ubiquitos content from this device only
+ * this method switch CDBCoreDataStore to local store automatically
+ **/
+
 - (void)removeLocalUbiquitousContentWithCompletion:(CDBErrorCompletion _Nullable)completion;
+
+/**
+ * @brief
+ * remove all ubiquitos content from the cloud and all devices
+ * this method switch CDBCoreDataStore to local store automatically
+ **/
+
 - (void)removeAllUbiquitousContentWithCompletion:(CDBErrorCompletion _Nullable)completion;
 
 - (NSPersistentStoreCoordinator * _Nullable)defaultStoreCoordinator;

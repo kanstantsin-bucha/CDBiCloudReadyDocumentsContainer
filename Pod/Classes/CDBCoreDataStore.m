@@ -174,7 +174,7 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
         if (error == nil) {
             _ubiquitosStoreCoordinator = storeCoordinator;
             _ubiqutosStore = store;
-            [self registerToiCloudStoreNotifications];
+            [self subscribeToUbiquitosStoreNotifications];
             [self preventLockSwitchingToUbiquitosStore];
             CDBCoreDataStoreState state = self.state;
             state = CDBAddStoreState(state, CDBCoreDataStoreUbiquitosConnected);
@@ -240,7 +240,7 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
 
 #pragma mark - notifications -
 
-- (void)registerToiCloudStoreNotifications {
+- (void)subscribeToUbiquitosStoreNotifications {
     [self.notificationCenter addObserver:self
                                 selector:@selector(storesWillChange:)
                                     name:NSPersistentStoreCoordinatorStoresWillChangeNotification
@@ -257,7 +257,7 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
                                   object:self.ubiquitosStoreCoordinator];
 }
 
-- (void)unregisterFromiCloudStoreNotifications {
+- (void)unsubscribeFromUbiquitosStoreNotifications {
     [self.notificationCenter removeObserver:self];
 }
 
@@ -334,6 +334,8 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
     state = CDBRemoveStoreState(state, CDBCoreDataStoreUbiquitosActive);
     
     [self changeStoreStateTo:state];
+    
+    [self unsubscribeFromUbiquitosStoreNotifications];
     
     self.ubiquitosContext = nil;
     self.ubiqutosStore = nil;

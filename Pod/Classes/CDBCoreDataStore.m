@@ -6,6 +6,8 @@
 #define CDB_Store_Ubiqutos_URL_Postfix @".CDB.CDBCoreDataStore.store.ubiquitos.URL=NSURL"
 #define CDB_Store_Current_State_Postfix @".CDB.CDBCoreDataStore.store.current.state=CDBCoreDataStoreState"
 #define CDB_Store_Ubiqutos_Token_Postfix @".CDB.CDBCoreDataStore.store.ubiquitos.token=NSObject"
+#define CDB_Store_SQLite_Files_Postfixes @[@"-shm", @"-wal"]
+#define CDB_Store_Ubiquitos_Content_Local_Directory_Name @"CoreDataUbiquitySupport"
 
 
 #ifdef DEBUG
@@ -27,17 +29,17 @@ NSString * _Nonnull CDBCoreDataStoreDidChangeNotification = @"CDBCoreDataStoreDi
 @property (strong, nonatomic, readwrite) NSString * storeName;
 @property (strong, nonatomic, readwrite) NSManagedObjectModel * storeModel;
 
+@property (assign, nonatomic, readwrite) BOOL localStoreDisabled;
 @property (strong, nonatomic, readwrite) NSManagedObjectContext * localContext;
 @property (strong, nonatomic, readwrite) NSPersistentStore * localStore;
 @property (strong, nonatomic) NSURL * localStoreURL;
 @property (strong, nonatomic, readwrite) NSPersistentStoreCoordinator * localStoreCoordinator;
 
+@property (assign, nonatomic, readwrite) BOOL ubiquitosStoreDisabled;
 @property (strong, nonatomic, readwrite) NSManagedObjectContext * ubiquitosContext;
 @property (strong, nonatomic, readwrite) NSPersistentStore * ubiqutosStore;
 @property (strong, nonatomic) NSURL * ubiquitosStoreURL;
 @property (strong, nonatomic, readwrite) NSPersistentStoreCoordinator * ubiquitosStoreCoordinator;
-
-@property (strong, nonatomic, readonly) NSURL * localCoreDataUbiquitySupportDirectoryURL;
 
 @end
 
@@ -94,6 +96,10 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
 #pragma mark context
 
 - (NSManagedObjectContext *)localContext {
+    if (self.localStoreDisabled) {
+        return nil;
+    }
+    
     if (_localContext == nil
         && self.localStoreCoordinator != nil) {
         _localContext =
@@ -104,6 +110,10 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
 }
 
 - (NSManagedObjectContext *)ubiquitosContext {
+    if (self.ubiquitosStoreDisabled) {
+        return nil;
+    }
+    
     if (_ubiquitosContext == nil
         && self.ubiquitosStoreCoordinator != nil) {
         _ubiquitosContext =
@@ -152,6 +162,7 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
         if (error == nil) {
             _localStoreCoordinator = storeCoordinator;
             _localStore = store;
+            [self notifyDelegateThatCoreDataStackCreatedForUbiquitos:NO];
         }
     }
     
@@ -176,6 +187,7 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
             _ubiqutosStore = store;
             [self subscribeToUbiquitosStoreNotifications];
             [self preventLockSwitchingToUbiquitosStore];
+            [self notifyDelegateThatCoreDataStackCreatedForUbiquitos:YES];
             CDBCoreDataStoreState state = self.state;
             state = CDBAddStoreState(state, CDBCoreDataStoreUbiquitosConnected);
             [self changeStoreStateTo:state];
@@ -208,13 +220,6 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
         result = [[self applicationDirectoryURLForPath:NSLibraryDirectory] URLByAppendingPathComponent:self.storeName];
     }
     
-    return result;
-}
-
-- (NSURL *)localCoreDataUbiquitySupportDirectoryURL {
-    NSURL * result =
-        [[self applicationDirectoryURLForPath:NSLibraryDirectory] URLByAppendingPathComponent:@"CoreDataUbiquitySupport"
-                                                                                  isDirectory:YES];
     return result;
 }
 
@@ -289,57 +294,51 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
     [self changeStoreStateTo:state];
 }
 
-- (void)replaceLocalStoreUsingUbiquitosOne {
-    NSMutableDictionary * destinationOptions = [self.localStoreOptions mutableCopy];
-    destinationOptions[NSPersistentStoreRemoveUbiquitousMetadataOption] = @YES;
+- (void)replaceLocalStoreUsingUbiquitosOneWithCompletion:(CDBErrorCompletion _Nullable)completion {
+    [self dismissAndDisableLocalCoreDataStack];
     
-    
-    
-    NSPersistentStoreCoordinator * replacementCoordinator = [self defaultStoreCoordinator];
-    
-    NSError * error = nil;
-    
-    [self.localStoreCoordinator removePersistentStore:self.localStore
-                                                error:&error];
-    self.localStoreCoordinator = nil;
-    
-    if (error != nil) {
-        
-    }
-    
-    [replacementCoordinator replacePersistentStoreAtURL:self.localStoreURL
-                                     destinationOptions:destinationOptions
-                             withPersistentStoreFromURL:self.ubiquitosStoreURL
-                                          sourceOptions:self.ubiquitosStoreOptions
-                                              storeType:NSSQLiteStoreType
-                                                  error:&error];
-    
-    
-    if (error != nil) {
-        
-    }
+    [self removeCoreDataStoreAtURL:self.localStoreURL
+                        completion:^(NSError * _Nullable deletionError) {
+        NSMutableDictionary * migrationOptions = [self.localStoreOptions mutableCopy];
+        migrationOptions[NSPersistentStoreRemoveUbiquitousMetadataOption] = @YES;
+
+        NSError * error = nil;
+        [self.ubiquitosStoreCoordinator migratePersistentStore:self.ubiqutosStore
+                                                         toURL:self.localStoreURL
+                                                       options:migrationOptions
+                                                      withType:NSSQLiteStoreType
+                                                         error:&error];
+        [self enableLocalCoreDataStack];
+        if (completion != nil) {
+            completion(error);
+        }
+    }];
 }
 
-- (void)dismissLocalCoreDataStack {
-    self.localContext = nil;
-    self.localStore = nil;
-    self.localStoreCoordinator = nil;
+- (void)dismissAndDisableLocalCoreDataStack {
+    self.localStoreDisabled = YES;
+
+    _localContext = nil;
+    _localStore = nil;
+    _localStoreCoordinator = nil;
 }
 
-- (void)dismissUbiquitosCoreDataStack {
+- (void)enableLocalCoreDataStack {
+    self.localStoreDisabled = NO;
+}
 
-    CDBCoreDataStoreState state = [self loadCurrentStoreStateUsingStoreName:self.storeName];
-    
-    state = CDBRemoveStoreState(state, CDBCoreDataStoreUbiquitosConnected);
-    state = CDBRemoveStoreState(state, CDBCoreDataStoreUbiquitosActive);
-    
-    [self changeStoreStateTo:state];
+- (void)dismissAndDisableUbiquitosCoreDataStack {
+    self.ubiquitosStoreDisabled = YES;
     
     [self unsubscribeFromUbiquitosStoreNotifications];
     
-    self.ubiquitosContext = nil;
-    self.ubiqutosStore = nil;
-    self.ubiquitosStoreCoordinator = nil;
+    _ubiquitosContext = nil;
+    _ubiqutosStore = nil;
+    _ubiquitosStoreCoordinator = nil;
+}
+
+- (void)enableUbiquitosCoreDataStack {
+    self.ubiquitosStoreDisabled = NO;
 }
 
 - (void)mergeUbiquitousContentChangesUsing:(NSNotification *)changeNotification {
@@ -352,11 +351,13 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
 - (void)rebuildUbiquitosStoreFromUbiquitousContenWithCompletion:(CDBErrorCompletion _Nullable)completion {
     NSDictionary * options = self.ubiquitosStoreOptions;
     
+    [self dismissAndDisableUbiquitosCoreDataStack];
+    
     NSMutableDictionary * rebuildOptions = [options mutableCopy];
     rebuildOptions[NSPersistentStoreRebuildFromUbiquitousContentOption] = @(YES);
     self.ubiquitosStoreOptions = [rebuildOptions copy];
-    [self dismissUbiquitosCoreDataStack];
     
+    [self enableUbiquitosCoreDataStack];
     [self touch:self.ubiquitosStoreCoordinator];
     
     self.ubiquitosStoreOptions = options;
@@ -367,59 +368,37 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
 }
 
 - (void)removeLocalUbiquitousContentWithCompletion:(CDBErrorCompletion _Nullable)completion {
-    if ([[NSFileManager defaultManager] fileExistsAtPath:self.localCoreDataUbiquitySupportDirectoryURL.path] == NO) {
-        return;
-    }
     
-    __block NSError * error = nil;
-    void (^ accessor)(NSURL * writingURL)  = ^(NSURL* writingURL) {
-        [[NSFileManager new] removeItemAtURL:writingURL
-                                       error:&error];
-    };
+    NSURL * firstPossibleDirectory =
+        [[self applicationDirectoryURLForPath:NSDocumentDirectory]
+            URLByAppendingPathComponent:CDB_Store_Ubiquitos_Content_Local_Directory_Name
+                            isDirectory:YES];
+    NSURL * secondPossibleDirectory =
+        [[self applicationDirectoryURLForPath:NSLibraryDirectory]
+            URLByAppendingPathComponent:CDB_Store_Ubiquitos_Content_Local_Directory_Name
+                            isDirectory:YES];
     
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
-        dispatch_sync(dispatch_get_main_queue(), ^{
-            CDBCoreDataStoreState state = [self loadCurrentStoreStateUsingStoreName:self.storeName];
-            
-            state = CDBRemoveStoreState(state, CDBCoreDataStoreUbiquitosSelected);
-            state = CDBRemoveStoreState(state, CDBCoreDataStoreUbiquitosConnected);
-            state = CDBRemoveStoreState(state, CDBCoreDataStoreUbiquitosActive);
-            
-            [self changeStoreStateTo:state];
-            
-            [self dismissUbiquitosCoreDataStack];
-        });
+    [self dismissAndDisableUbiquitosCoreDataStack];
+    
+    [self coordinatedRemoveItemsAtURLs:@[firstPossibleDirectory, secondPossibleDirectory]
+                            completion:^(NSError * _Nullable error) {
+        [self enableUbiquitosCoreDataStack];
         
-        NSFileCoordinator * fileCoordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
-        
-        [fileCoordinator coordinateWritingItemAtURL:self.localCoreDataUbiquitySupportDirectoryURL
-                                            options:NSFileCoordinatorWritingForDeleting
-                                              error:nil
-                                         byAccessor:accessor];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (completion != nil) {
-                completion(error);
-            }
-        });
-    });
+        if (completion != nil) {
+            completion(error);
+        }
+    }];
 }
 
 - (void)removeAllUbiquitousContentWithCompletion:(CDBErrorCompletion _Nullable)completion {
-    CDBCoreDataStoreState state = [self loadCurrentStoreStateUsingStoreName:self.storeName];
-    
-    state = CDBRemoveStoreState(state, CDBCoreDataStoreUbiquitosSelected);
-    state = CDBRemoveStoreState(state, CDBCoreDataStoreUbiquitosConnected);
-    state = CDBRemoveStoreState(state, CDBCoreDataStoreUbiquitosActive);
-    
-    [self changeStoreStateTo:state];
-    
-    [self dismissUbiquitosCoreDataStack];
-    
+    [self dismissAndDisableUbiquitosCoreDataStack];
+      
     NSError * error = nil;
     
     [NSPersistentStoreCoordinator removeUbiquitousContentAndPersistentStoreAtURL:self.ubiquitosStoreURL
                                                                          options:self.ubiquitosStoreOptions
                                                                            error:&error];
+    [self enableUbiquitosCoreDataStack];
     
     if (completion != nil) {
         completion(error);
@@ -531,6 +510,12 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
 - (void)notifyDelegateThatUserWillRemoveContentOfStore {
     if ([self.delegate respondsToSelector:@selector(CDBCoreDataDetectThatUserWillRemoveContentOfStore:)]) {
         [self.delegate CDBCoreDataDetectThatUserWillRemoveContentOfStore:self];
+    }
+}
+
+- (void)notifyDelegateThatCoreDataStackCreatedForUbiquitos:(BOOL)ubiquitos {
+    if ([self.delegate respondsToSelector:@selector(CDBCoreDataStore:didCreateCoreDataStackThatUbiquitous:)]) {
+        [self.delegate CDBCoreDataStore:self didCreateCoreDataStackThatUbiquitous:ubiquitos];
     }
 }
 
@@ -772,6 +757,102 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
     NSFileManager * fileManager = [NSFileManager defaultManager];
     id<NSObject,NSCopying,NSCoding> result = fileManager.ubiquityIdentityToken;
     return result;
+}
+
+#pragma mark - files
+
+- (void)coordinatedRemoveItemAtURL:(NSURL *)URL
+                        completion:(CDBErrorCompletion)completion {
+    __block NSError * error = nil;
+    void (^ accessor)(NSURL * writingURL) = ^(NSURL* writingURL) {
+        [[NSFileManager new] removeItemAtURL:writingURL
+                                       error:&error];
+    };
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
+        NSFileCoordinator * fileCoordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
+        
+        [fileCoordinator coordinateWritingItemAtURL:URL
+                                            options:NSFileCoordinatorWritingForDeleting
+                                              error:nil
+                                         byAccessor:accessor];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (completion != nil) {
+                completion(error);
+            }
+        });
+    });
+}
+
+/**
+ * @brief:
+ * note that we return last happend error only
+**/
+
+- (void)coordinatedRemoveItemsAtURLs:(NSArray *)URLs
+                          completion:(CDBErrorCompletion)completion {
+    NSMutableArray * URLsToRemove = [NSMutableArray array];
+    for (NSURL * URL in URLs) {
+        if ([[NSFileManager defaultManager] fileExistsAtPath:URL.path] == NO) {
+            continue;
+        }
+        [URLsToRemove addObject:URL];
+    }
+    
+    if (URLsToRemove.count == 0) {
+        if (completion != nil) {
+            completion(nil);
+        }
+        return;
+    }
+    
+    __block NSUInteger counter = URLsToRemove.count;
+    __block NSError * removeError = nil;
+    
+    for (NSURL * URL in URLsToRemove) {
+        [self coordinatedRemoveItemAtURL:URL
+                              completion:^(NSError * _Nullable error) {
+            if (error != nil) {
+                removeError = error;
+            }
+
+            counter -= 1;
+
+            if (counter == 0) {
+                if (completion != nil) {
+                    completion(removeError);
+                }
+            }
+        }];
+    }
+}
+
+- (void)removeCoreDataStoreAtURL:(NSURL *)URL
+                      completion:(CDBErrorCompletion)completion {
+    if (URL.path.length == 0) {
+        if (completion != nil) {
+            completion(nil);
+        }
+        return;
+    }
+    
+    NSMutableArray * URLsToRemove = [NSMutableArray array];
+    [URLsToRemove addObject:URL];
+    
+    NSString * storeName = URL.lastPathComponent;
+    NSURL * containingDirectoryURL = [URL URLByDeletingLastPathComponent];
+    
+    for (NSString * postfix in CDB_Store_SQLite_Files_Postfixes) {
+        NSString * fileName = [storeName stringByAppendingString:postfix];
+        NSURL * URLToDelete = [containingDirectoryURL URLByAppendingPathComponent:fileName];
+        if (URLToDelete == nil) {
+            continue;
+        }
+        [URLsToRemove addObject:URLToDelete];
+    }
+    
+    [self coordinatedRemoveItemsAtURLs:URLsToRemove
+                            completion:completion];
 }
 
 @end

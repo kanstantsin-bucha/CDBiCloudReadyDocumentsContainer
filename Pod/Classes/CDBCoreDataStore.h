@@ -54,13 +54,14 @@ BOOL CDBCheckStoreState(CDBCoreDataStoreState state, NSUInteger option);
 @property (strong, nonatomic, readonly, nullable) NSString * storeName;
 @property (strong, nonatomic, readonly, nullable) NSManagedObjectModel * storeModel;
 
-
+@property (assign, nonatomic, readonly) BOOL localStoreDisabled;
 @property (strong, nonatomic, readonly, nullable) NSManagedObjectContext * localContext;
 @property (strong, nonatomic, readonly, nullable) NSPersistentStore * localStore;
 @property (strong, nonatomic, nullable) NSDictionary * localStoreOptions;
 @property (strong, nonatomic, readonly, nullable) NSURL * localStoreURL;
 @property (strong, nonatomic, readonly, nullable) NSPersistentStoreCoordinator * localStoreCoordinator;
 
+@property (assign, nonatomic, readonly) BOOL ubiquitosStoreDisabled;
 @property (strong, nonatomic, readonly, nullable) NSManagedObjectContext * ubiquitosContext;
 @property (strong, nonatomic, readonly, nullable) NSPersistentStore * ubiqutosStore;
 @property (strong, nonatomic, nullable) NSDictionary * ubiquitosStoreOptions;
@@ -75,13 +76,22 @@ BOOL CDBCheckStoreState(CDBCoreDataStoreState state, NSUInteger option);
 
 - (void)selectUbiquitos:(BOOL)ubiquitos;
 
+- (void)dismissAndDisableLocalCoreDataStack;
+- (void)enableLocalCoreDataStack;
 
-
-- (void)dismissLocalCoreDataStack;
-- (void)dismissUbiquitosCoreDataStack;
+- (void)dismissAndDisableUbiquitosCoreDataStack;
+- (void)enableUbiquitosCoreDataStack;
 
 - (void)mergeUbiquitousContentChangesUsing:(NSNotification * _Nullable)changeNotification;
-- (void)replaceLocalStoreUsingUbiquitosOne;
+
+/**
+ * @brief
+ * remove local store and migrate ubiquitos to it's place
+ * this method dissmiss local store during execution
+ * if removing fails it try to populate local store with ubiquitos content
+ **/
+
+- (void)replaceLocalStoreUsingUbiquitosOneWithCompletion:(CDBErrorCompletion _Nullable)completion;
 
 /**
  * @brief
@@ -95,7 +105,8 @@ BOOL CDBCheckStoreState(CDBCoreDataStoreState state, NSUInteger option);
 /**
  * @brief
  * remove all ubiquitos content from this device only
- * this method switch CDBCoreDataStore to local store automatically
+ * note that it returns last happend error only
+ * this method dissmiss ubiquitos store during execution
  **/
 
 - (void)removeLocalUbiquitousContentWithCompletion:(CDBErrorCompletion _Nullable)completion;
@@ -103,7 +114,7 @@ BOOL CDBCheckStoreState(CDBCoreDataStoreState state, NSUInteger option);
 /**
  * @brief
  * remove all ubiquitos content from the cloud and all devices
- * this method switch CDBCoreDataStore to local store automatically
+ * this method dissmiss ubiquitos store during execution
  **/
 
 - (void)removeAllUbiquitousContentWithCompletion:(CDBErrorCompletion _Nullable)completion;
@@ -122,6 +133,7 @@ BOOL CDBCheckStoreState(CDBCoreDataStoreState state, NSUInteger option);
  * called when store switching current context
  * called before store changes it's state
  * you could migrate you data from store to store there
+ * please don't change store state inside this methods
  **/
 
 - (void)CDBCoreDataStore:(CDBCoreDataStore * _Nullable)store
@@ -139,6 +151,18 @@ BOOL CDBCheckStoreState(CDBCoreDataStoreState state, NSUInteger option);
 
 - (void)CDBCoreDataStore:(CDBCoreDataStore * _Nullable)store
     didImportUbiquitousContentChanges:(NSNotification * _Nullable)changeNotification;
+
+/**
+ * @brief
+ * called when store created core data stack (storeCoordinator, store)
+ * called before store changes it's state
+ * usually it happends when app request context or on selecting different store
+ *
+ * you could perform some core data tasks with store here before it data comes to UI
+ **/
+
+- (void)CDBCoreDataStore:(CDBCoreDataStore * _Nullable)store
+didCreateCoreDataStackThatUbiquitous:(BOOL)ubiquitos;
 
 
 - (void)CDBCoreDataDidChangeStateOfStore:(CDBCoreDataStore * _Nullable)store;

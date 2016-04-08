@@ -583,17 +583,25 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
 #pragma mark iCloud store changes handling
 
 - (void)persistentStoreDidImportUbiquitousContentChanges:(NSNotification *)changeNotification {
-    if ([self.delegate respondsToSelector:@selector(CDBCoreDataStore:didImportUbiquitousContentChanges:)]) {
-        [self.delegate CDBCoreDataStore:self
-         didImportUbiquitousContentChanges:changeNotification];
-    } else {
-        [self mergeUbiquitousContentChangesUsing:changeNotification];
-    }
-    
-    [self postNotificationUsingName:CDBCoreDataStoreDidChangeNotification];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if ([self.delegate respondsToSelector:@selector(CDBCoreDataStore:didImportUbiquitousContentChanges:)]) {
+            [self.delegate CDBCoreDataStore:self
+          didImportUbiquitousContentChanges:changeNotification];
+        } else {
+            [self mergeUbiquitousContentChangesUsing:changeNotification];
+        }
+        
+        [self postNotificationUsingName:CDBCoreDataStoreDidChangeNotification];
+    });
 }
 
 - (void)storesWillChange:(NSNotification *)notification {
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        [self handleStoresWillChange:notification];
+    });
+}
+
+- (void)handleStoresWillChange:(NSNotification *)notification {
     NSPersistentStoreUbiquitousTransitionType transitionType =
         [self transitionTypeFromNotification:notification];
     
@@ -625,6 +633,12 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
 }
 
 - (void)storesDidChange:(NSNotification *)notification {
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        [self handleStoresDidChange:notification];
+    });
+}
+
+- (void)handleStoresDidChange:(NSNotification *)notification {
     NSPersistentStoreUbiquitousTransitionType transitionType =
         [self transitionTypeFromNotification:notification];
     

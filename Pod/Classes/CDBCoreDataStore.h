@@ -119,6 +119,15 @@ BOOL CDBCheckStoreState(CDBCoreDataStoreState state, NSUInteger option);
 
 - (void)removeAllUbiquitousContentWithCompletion:(CDBErrorCompletion _Nullable)completion;
 
+/**
+ * @brief
+ * remove store at URL and it's cach files too
+ * store should be closed (it should have no connected store coordinators)
+ **/
+
+- (void)removeCoreDataStoreAtURL:(NSURL *)URL
+                      completion:(CDBErrorCompletion)completion;
+
 - (NSPersistentStoreCoordinator * _Nullable)defaultStoreCoordinator;
 
 @end

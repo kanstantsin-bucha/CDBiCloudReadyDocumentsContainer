@@ -405,6 +405,34 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
     }
 }
 
+- (void)removeCoreDataStoreAtURL:(NSURL *)URL
+                      completion:(CDBErrorCompletion)completion {
+    if (URL.path.length == 0) {
+        if (completion != nil) {
+            completion(nil);
+        }
+        return;
+    }
+    
+    NSMutableArray * URLsToRemove = [NSMutableArray array];
+    [URLsToRemove addObject:URL];
+    
+    NSString * storeName = URL.lastPathComponent;
+    NSURL * containingDirectoryURL = [URL URLByDeletingLastPathComponent];
+    
+    for (NSString * postfix in CDB_Store_SQLite_Files_Postfixes) {
+        NSString * fileName = [storeName stringByAppendingString:postfix];
+        NSURL * URLToDelete = [containingDirectoryURL URLByAppendingPathComponent:fileName];
+        if (URLToDelete == nil) {
+            continue;
+        }
+        [URLsToRemove addObject:URLToDelete];
+    }
+    
+    [self coordinatedRemoveItemsAtURLs:URLsToRemove
+                            completion:completion];
+}
+
 #pragma mark - private -
 
 #pragma mark store state changing
@@ -825,34 +853,6 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
             }
         }];
     }
-}
-
-- (void)removeCoreDataStoreAtURL:(NSURL *)URL
-                      completion:(CDBErrorCompletion)completion {
-    if (URL.path.length == 0) {
-        if (completion != nil) {
-            completion(nil);
-        }
-        return;
-    }
-    
-    NSMutableArray * URLsToRemove = [NSMutableArray array];
-    [URLsToRemove addObject:URL];
-    
-    NSString * storeName = URL.lastPathComponent;
-    NSURL * containingDirectoryURL = [URL URLByDeletingLastPathComponent];
-    
-    for (NSString * postfix in CDB_Store_SQLite_Files_Postfixes) {
-        NSString * fileName = [storeName stringByAppendingString:postfix];
-        NSURL * URLToDelete = [containingDirectoryURL URLByAppendingPathComponent:fileName];
-        if (URLToDelete == nil) {
-            continue;
-        }
-        [URLsToRemove addObject:URLToDelete];
-    }
-    
-    [self coordinatedRemoveItemsAtURLs:URLsToRemove
-                            completion:completion];
 }
 
 @end

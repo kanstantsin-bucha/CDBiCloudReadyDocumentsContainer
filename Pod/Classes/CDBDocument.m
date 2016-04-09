@@ -119,24 +119,26 @@
     return result;
 }
 
-- (NSString *)description {
-    NSString * result = [NSString stringWithFormat:
-                        @"[%@:<%@>] %@\
-                        \r fileURL: %@\
-                        \r ubiquitous: %@\
-                        \r documentState: %@\
-                        \r fileState: %@ %@\
-                        \r modifiedDate: %@\
-                        \r fileSize: %.2f MB",
-                        NSStringFromClass([self class]), @(self.hash), self.localizedName,
-                        self.fileURL,
-                        self.isUbiquitous ? @"YES" : @"NO",
-                        self.localizedDocumentState,
-                        StringFromCDBFileState(self.fileState), self.fileName,
-                        self.fileModificationDate,
-                        (float)[(NSData *)self.contents length]/1024.0f/1024.0f];
-    return result;
-}
+
+// removed temporary - has issue on description copy on dellocation that stub fileState methods
+//- (NSString *)description {
+//    NSString * result = [NSString stringWithFormat:
+//                        @"[%@:<%@>] %@\
+//                        \r fileURL: %@\
+//                        \r ubiquitous: %@\
+//                        \r documentState: %@\
+//                        \r fileState: %@ %@\
+//                        \r modifiedDate: %@\
+//                        \r fileSize: %.2f MB",
+//                        NSStringFromClass([self class]), @(self.hash), self.localizedName,
+//                        self.fileURL,
+//                        self.isUbiquitous ? @"YES" : @"NO",
+//                        self.localizedDocumentState,
+//                        StringFromCDBFileState(self.fileState), self.fileName,
+//                        self.fileModificationDate,
+//                        (float)[(NSData *)self.contents length]/1024.0f/1024.0f];
+//    return result;
+//}
 
 #pragma mark Handling error
 

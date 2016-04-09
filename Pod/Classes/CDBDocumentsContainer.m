@@ -342,29 +342,34 @@
                                         : localURL;
     
     __block NSError * error = nil;
-    void (^accessor)(NSURL *, NSURL *) = ^(NSURL * newReadingURL, NSURL * newWritingURL) {
+//    void (^accessor)(NSURL *, NSURL *) = ^(NSURL * newReadingURL, NSURL * newWritingURL) {
         [self.fileManager setUbiquitous:ubiquitous
-                              itemAtURL:newReadingURL
-                         destinationURL:newWritingURL
+                              itemAtURL:document.fileURL
+                         destinationURL:destinationURL
                                   error:&error];
         if (error == nil) {
-            [document presentedItemDidMoveToURL:newWritingURL];
+//            [document presentedItemDidMoveToURL:destinationURL];
         }
-    };
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
-        NSFileCoordinator * fileCoordinator = [[NSFileCoordinator alloc] initWithFilePresenter:document];
-        [fileCoordinator coordinateWritingItemAtURL:document.fileURL
-                                            options:NSFileCoordinatorWritingForMoving
-                                   writingItemAtURL:destinationURL
-                                            options:NSFileCoordinatorWritingForReplacing
-                                              error:&error
-                                         byAccessor:accessor];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (completion != nil) {
-                completion(error);
-            }
-        });
-    });
+    
+    if (completion != nil) {
+        completion(error);
+    }
+
+//    };
+//    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
+//        NSFileCoordinator * fileCoordinator = [[NSFileCoordinator alloc] initWithFilePresenter:document];
+//        [fileCoordinator coordinateWritingItemAtURL:document.fileURL
+//                                            options:NSFileCoordinatorWritingForMoving
+//                                   writingItemAtURL:destinationURL
+//                                            options:NSFileCoordinatorWritingForReplacing
+//                                              error:&error
+//                                         byAccessor:accessor];
+//        dispatch_async(dispatch_get_main_queue(), ^{
+//            if (completion != nil) {
+//                completion(error);
+//            }
+//        });
+//    });
 }
 
 - (CDBDocument *)documentWithAvailableFileURL:(NSURL *)fileURL

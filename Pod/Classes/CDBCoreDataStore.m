@@ -882,10 +882,10 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
 
 #pragma mark duplicates handling
 
-+ (void)performRemovingDublicatesForEntity:(NSEntityDescription * _Nullable)entity
-                         uniquePropertyKey:(NSString * _Nullable)uniquePropertyKey
-                              timestampKey:(NSString * _Nullable)timestampKey
-                              usingContext:(NSManagedObjectContext * _Nullable)context
++ (void)performRemovingDublicatesForEntity:(NSEntityDescription *)entity
+                         uniquePropertyKey:(NSString *)uniquePropertyKey
+                              timestampKey:(NSString *)timestampKey
+                              usingContext:(NSManagedObjectContext *)context
                                      error:(NSError **)error {
     
     NSArray * valuesWithDupes = [self valuesWithDublicatesForEntity:entity
@@ -922,9 +922,9 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
     }];
 }
 
-+ (NSArray *)valuesWithDublicatesForEntity:(NSEntityDescription * _Nullable)entity
-                         uniquePropertyKey:(NSString * _Nullable)uniquePropertyKey
-                              usingContext:(NSManagedObjectContext * _Nullable)context
++ (NSArray *)valuesWithDublicatesForEntity:(NSEntityDescription *)entity
+                         uniquePropertyKey:(NSString *)uniquePropertyKey
+                              usingContext:(NSManagedObjectContext *)context
                                      error:(NSError **)error {
     if (entity == nil
         || uniquePropertyKey.length == 0
@@ -960,9 +960,9 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
     return [result copy];
 }
 
-+ (void)resolveDuplicatesForEntity:(NSEntityDescription * _Nullable)entity
-                 uniquePropertyKey:(NSString * _Nullable)uniquePropertyKey
-                      timestampKey:(NSString * _Nullable)timestampKey
++ (void)resolveDuplicatesForEntity:(NSEntityDescription *)entity
+                 uniquePropertyKey:(NSString *)uniquePropertyKey
+                      timestampKey:(NSString *)timestampKey
          usingValuesWithDublicates:(NSArray *)valuesWithDupes
                            context:(NSManagedObjectContext * _Nullable)context
                              error:(NSError **)error {
@@ -1039,7 +1039,7 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
 }
 
 + (void)performBatchUIDsPopulationForEntity:(NSEntityDescription *)entity
-                     usingUniquePropertyKey:(NSString * _Nullable)uniquePropertyKey
+                     usingUniquePropertyKey:(NSString *)uniquePropertyKey
                                   batchSize:(NSUInteger)batchSize
                                   inContext:(NSManagedObjectContext *)context {
     if (entity == nil
@@ -1099,7 +1099,7 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
 }
 
 + (void)populateUIDsOfManagedObjects:(NSArray<NSManagedObject *> *)mananagedObjects
-              usingUniquePropertyKey:(NSString * _Nullable)uniquePropertyKey
+              usingUniquePropertyKey:(NSString *)uniquePropertyKey
                            inContext:(NSManagedObjectContext *)context
                                error:(NSError **)error {
     for (NSManagedObject * object in mananagedObjects) {

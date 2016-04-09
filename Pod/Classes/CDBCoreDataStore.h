@@ -32,7 +32,7 @@ BOOL CDBCheckStoreState(CDBCoreDataStoreState state, NSUInteger option);
 
 /**
  * @brief
- * if selected, connected but not active then cloud initial sync didn't finish yet and we use local store
+ * if selected but not active then cloud initial sync didn't finish yet and we use local store
  * when (set local storage: 0) appears we switch to ubiquitos store and set
  CDBCoreDataStoreUbiquitosActive to 1
  CDBCoreDataStoreUbiquitosInitiated to 1
@@ -43,7 +43,6 @@ BOOL CDBCheckStoreState(CDBCoreDataStoreState state, NSUInteger option);
  CDBCoreDataStoreUbiquitosActive to 0
  
  * if user log out from cloud we switch to local store while waiting for log in and set
- CDBCoreDataStoreUbiquitosConnected to 0
  CDBCoreDataStoreUbiquitosActive to 0
  **/
 
@@ -200,6 +199,7 @@ didCreateCoreDataStackThatUbiquitous:(BOOL)ubiquitos;
 /**
  * @brief
  * called when user remove (clear) all cloud data 
+ * store changes to local automatically after delegate call
  * called before store changes it's state
  * you probably should migrate you cloud data to local on this call or lose it forever
  **/

@@ -13,9 +13,8 @@
 
 typedef NS_OPTIONS(NSUInteger, CDBCoreDataStoreState) {
     CDBCoreDataStoreUbiquitosSelected = 1 << 0, // 1 - selected store is ubiquitos / 0 - local
-    CDBCoreDataStoreUbiquitosConnected = 1 << 1, // 1 - ubiquitos store connected / 0 - disconnected
-    CDBCoreDataStoreUbiquitosActive = 1 << 2, // 1 - current store is ubiquitos / 0 - local
-    CDBCoreDataStoreUbiquitosInitiated = 1 << 3 // 1 - ubiquitos initiated / 0 - waiting for initialization
+    CDBCoreDataStoreUbiquitosActive = 1 << 1, // 1 - current store is ubiquitos / 0 - local
+    CDBCoreDataStoreUbiquitosInitiated = 1 << 2 // 1 - ubiquitos initiated / 0 - waiting for initialization
 };
 
 

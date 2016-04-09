@@ -278,7 +278,8 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
     
     
     [self postNotificationUsingName:CDBCoreDataStoreWillChangeNotification];
-    [self loadStoreStateForStoreName:self.storeName];
+    CDBCoreDataStoreState state = [self loadStoreStateForStoreName:self.storeName];
+    [self changeStoreStateTo:state];
     [self postNotificationUsingName:CDBCoreDataStoreDidChangeNotification];
 }
 
@@ -345,13 +346,20 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
 
 - (void)enableUbiquitosCoreDataStack {
     self.ubiquitosStoreDisabled = NO;
+    [self initiateUbiquitosConnection];
 }
 
-- (void)mergeUbiquitousContentChangesUsing:(NSNotification *)changeNotification {
-    NSManagedObjectContext * context = self.ubiquitosContext;
+- (void)mergeUbiquitousContentChanges:(NSNotification *)changeNotification
+                         usingContext:(NSManagedObjectContext *)context {
+    if (context == nil) {
+        return;
+    }
+    
     [context performBlock:^{
         [context mergeChangesFromContextDidSaveNotification:changeNotification];
     }];
+    
+    [self saveContext:context];
 }
 
 - (void)rebuildUbiquitosStoreFromUbiquitousContenWithCompletion:(CDBErrorCompletion _Nullable)completion {
@@ -443,27 +451,27 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
 
 #pragma mark store state changing
 
-- (void)loadStoreStateForStoreName:(NSString *)name {
+- (CDBCoreDataStoreState)loadStoreStateForStoreName:(NSString *)name {
     if (name.length == 0) {
-        return;
+        return 0;
     }
     
     // check if cloud user changed and make app use local store if cloud not initiated yet
-    CDBCoreDataStoreState state = [self loadCurrentStoreStateUsingStoreName:self.storeName];
+    CDBCoreDataStoreState result = [self loadCurrentStoreStateUsingStoreName:self.storeName];
     
     // definately we are not active yet
-    state = CDBRemoveStoreState(state, CDBCoreDataStoreUbiquitosActive);
+    result = CDBRemoveStoreState(result, CDBCoreDataStoreUbiquitosActive);
     
-    if (state & CDBCoreDataStoreUbiquitosInitiated) {
+    if (result & CDBCoreDataStoreUbiquitosInitiated) {
         id token = [self currentUbiquitosStoreToken];
         id initiatedOne = [self loadUbiquitosStoreTokenUsingStoreName:self.storeName];
         if ([token isEqual:initiatedOne] == NO) {
-            state = CDBRemoveStoreState(state, CDBCoreDataStoreUbiquitosInitiated);
-            state = CDBRemoveStoreState(state, CDBCoreDataStoreUbiquitosActive);
+            result = CDBRemoveStoreState(result, CDBCoreDataStoreUbiquitosInitiated);
+            result = CDBRemoveStoreState(result, CDBCoreDataStoreUbiquitosActive);
         }
     }
     
-    [self changeStoreStateTo:state];
+    return result;
 }
 
 - (void)changeStoreStateTo:(CDBCoreDataStoreState)incomingState {
@@ -555,8 +563,7 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
 
 #pragma mark context 
 
-- (void)saveContext {
-    NSManagedObjectContext * context = self.currentContext ;
+- (void)saveContext:(NSManagedObjectContext *)context {
     [context performBlockAndWait:^{
         NSError * error = nil;
         
@@ -568,6 +575,12 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
                 NSLog(@"%@", [error localizedDescription]);
             }
         }
+    }];
+}
+
+- (void)resetContext:(NSManagedObjectContext *)context {
+    [context performBlockAndWait:^{
+        [context reset];
     }];
 }
 
@@ -594,7 +607,8 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
             [self.delegate CDBCoreDataStore:self
           didImportUbiquitousContentChanges:changeNotification];
         } else {
-            [self mergeUbiquitousContentChangesUsing:changeNotification];
+            [self mergeUbiquitousContentChanges:changeNotification
+                                   usingContext:self.ubiquitosContext];
         }
         
         [self postNotificationUsingName:CDBCoreDataStoreDidChangeNotification];
@@ -613,6 +627,7 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
 }
 
 - (void)handleStoresWillChange:(NSNotification *)notification {
+    
     NSPersistentStoreUbiquitousTransitionType transitionType =
         [self transitionTypeFromNotification:notification];
     
@@ -639,6 +654,9 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
     }
     
     [self changeStoreStateTo:state];
+    
+    [self saveContext:self.currentContext];
+    [self resetContext:self.currentContext];
 }
 
 - (void)storesDidChange:(NSNotification *)notification {
@@ -659,7 +677,7 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
     CDBCoreDataStoreState state = self.state;
     switch (transitionType) {
         case NSPersistentStoreUbiquitousTransitionTypeAccountAdded: {
-            state = CDBAddStoreState(state, CDBCoreDataStoreUbiquitosActive);//???
+            state = [self loadStoreStateForStoreName:self.storeName];
         }   break;
         
         case NSPersistentStoreUbiquitousTransitionTypeAccountRemoved: {
@@ -682,7 +700,7 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
 - (NSPersistentStoreUbiquitousTransitionType)transitionTypeFromNotification:(NSNotification *)notification {
     NSNumber * transition = notification.userInfo[@"NSPersistentStoreUbiquitousTransitionTypeKey"];
     NSPersistentStoreUbiquitousTransitionType result =
-    (NSPersistentStoreUbiquitousTransitionType)transition.unsignedIntegerValue;
+        (NSPersistentStoreUbiquitousTransitionType)transition.unsignedIntegerValue;
     return result;
 }
 

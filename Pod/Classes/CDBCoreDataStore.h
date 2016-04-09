@@ -81,7 +81,8 @@ BOOL CDBCheckStoreState(CDBCoreDataStoreState state, NSUInteger option);
 - (void)dismissAndDisableUbiquitosCoreDataStack;
 - (void)enableUbiquitosCoreDataStack;
 
-- (void)mergeUbiquitousContentChangesUsing:(NSNotification * _Nullable)changeNotification;
+- (void)mergeUbiquitousContentChanges:(NSNotification * _Nullable)changeNotification
+                         usingContext:(NSManagedObjectContext * _Nonnull)context;
 
 /**
  * @brief
@@ -172,7 +173,7 @@ BOOL CDBCheckStoreState(CDBCoreDataStoreState state, NSUInteger option);
  * @brief
  * called when store imported cloud changes
  * you could provide your custom logic there
- * after merging changes using [ mergeUbiquitousContentChangesUsing:] method 
+ * after merging changes using [ mergeUbiquitousContentChanges: usingContext:] method
  *
  * if this method not implemented in delegate store use
  * using [ mergeUbiquitousContentChangesUsing:] method automatically

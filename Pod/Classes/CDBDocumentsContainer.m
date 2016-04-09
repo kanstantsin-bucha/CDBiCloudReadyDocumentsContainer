@@ -84,15 +84,17 @@
 
 - (void)handleMetadataQueryDidUpdateNotification:(NSNotification *)notification {
     [self.metadataQuery disableUpdates];
-    [self updateFiles];
+    [self updateFilesWithCompletion:^{
+        [self.metadataQuery enableUpdates];
+    }];
     [self logMetadataQueryNotification:notification];
-    [self.metadataQuery enableUpdates];
 }
 
 - (void)handleMetadataQueryDidFinishGatheringNotification:(NSNotification *)notification {
     [self.metadataQuery disableUpdates];
-    [self updateFiles];
-    [self.metadataQuery enableUpdates];
+    [self updateFilesWithCompletion:^{
+        [self.metadataQuery enableUpdates];
+    }];
 }
 
 #pragma mark - Protocols -
@@ -440,55 +442,59 @@
     });
 }
 
-- (void)updateFiles {
-    __block CDBContaineriCloudState state = CDBContaineriCloudCurrent;
+- (void)updateFilesWithCompletion:(CDBCompletion)completion {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
     
-    NSMutableArray * documents = [NSMutableArray array];
-    NSMutableArray * documentNames = [NSMutableArray array];
-    
-    [self.metadataQuery enumerateResultsUsingBlock:^(NSMetadataItem * item, NSUInteger idx, BOOL *stop) {
-        NSURL * fileURL = [item valueForAttribute:NSMetadataItemURLKey];
-        NSString * fileName = [item valueForAttribute:NSMetadataItemFSNameKey];
+        __block CDBContaineriCloudState state = CDBContaineriCloudCurrent;
         
-        CDBDocument * document = [CDBDocument documentWithFileURL:fileURL
-                                                         delegate:self];
+        NSMutableArray * documents = [NSMutableArray array];
+        NSMutableArray * documentNames = [NSMutableArray array];
         
-        [documents addObject:document];
-        [documentNames addObject:document.localizedName];
+        [self.metadataQuery enumerateResultsUsingBlock:^(NSMetadataItem * item, NSUInteger idx, BOOL *stop) {
+            NSURL * fileURL = [item valueForAttribute:NSMetadataItemURLKey];
+            NSString * fileName = [item valueForAttribute:NSMetadataItemFSNameKey];
+            
+            CDBDocument * document = [CDBDocument documentWithFileURL:fileURL
+                                                             delegate:self];
+            
+            [documents addObject:document];
+            [documentNames addObject:document.localizedName];
+            
+            switch (document.fileState) {
+                case CDBFileUbiquitousMetadataOnly: {
+                    state = CDBContaineriCloudMetadata;
+                    [self startDownloadingDocumentWithURL:fileURL
+                                                  andName:fileName];
+                } break;
+                    
+                case CDBFileUbiquitousDownloaded: {
+                    if (state == CDBContaineriCloudCurrent) {
+                        state = CDBContaineriCloudDownloaded;
+                    }
+                } break;
+                    
+                case CDBFileUbiquitousCurrent: {
+                    
+                } break;
+                    
+                default:
+                    break;
+            }
+        }];
         
-        switch (document.fileState) {
-            case CDBFileUbiquitousMetadataOnly: {
-                state = CDBContaineriCloudMetadata;
-                [self startDownloadingDocumentWithURL:fileURL
-                                              andName:fileName];
-            } break;
-                
-            case CDBFileUbiquitousDownloaded: {
-                if (state == CDBContaineriCloudCurrent) {
-                    state = CDBContaineriCloudDownloaded;
-                }
-            } break;
-                
-            case CDBFileUbiquitousCurrent: {
-                
-            } break;
-                
-            default:
-                break;
-        }
-    }];
-    
-    self.cloudDocuments = [documents copy];
-    self.cloudDocumentNames = [documentNames copy];
-    
-    __weak typeof (self) wself = self;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if ([wself.delegate respondsToSelector:@selector(iCloudDocumentsDidChangeForContainer:)]) {
-            [wself.delegate iCloudDocumentsDidChangeForContainer:wself];
-        }
+        __weak typeof (self) wself = self;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.cloudDocuments = [documents copy];
+            self.cloudDocumentNames = [documentNames copy];
+            [self changeStateTo:state];
+            if (completion != nil) {
+                completion();
+            }
+            if ([wself.delegate respondsToSelector:@selector(iCloudDocumentsDidChangeForContainer:)]) {
+                [wself.delegate iCloudDocumentsDidChangeForContainer:wself];
+            }
+        });
     });
-    
-    [self changeStateTo:state];
 }
 
 - (void)dissmissSynchronization {

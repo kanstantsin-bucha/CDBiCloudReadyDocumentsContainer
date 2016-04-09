@@ -1073,7 +1073,6 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
         || uniquePropertyKey.length == 0) {
         return;
     }
-    batchSize = 7;
     
     if (batchSize == 0) {
         batchSize = 1000;
@@ -1105,7 +1104,7 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
             @autoreleasepool {
                 NSArray * batch = [results subarrayWithRange:currentBatchRange];
                 [self populateUIDsOfManagedObjects:batch
-                 usingUniquePropertyKey:(NSString * _Nullable)uniquePropertyKey
+                            usingUniquePropertyKey:(NSString * _Nullable)uniquePropertyKey
                                          inContext:context
                                              error:&error];
             }
@@ -1129,8 +1128,8 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
                            inContext:(NSManagedObjectContext *)context
                                error:(NSError **)error {
     for (NSManagedObject * object in mananagedObjects) {
-        [object setPrimitiveValue:[self generateEntityUID]
-                           forKey:uniquePropertyKey];
+        [object setValue:[self generateEntityUID]
+                  forKey:uniquePropertyKey];
     }
     [context performBlockAndWait:^{
         [context save:error];

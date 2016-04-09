@@ -1,6 +1,7 @@
 
 
 #import "CDBCoreDataStore.h"
+#import <Identify/Identify.h>
 
 
 #define CDB_Store_Ubiqutos_URL_Postfix @".CDB.CDBCoreDataStore.store.ubiquitos.URL=NSURL"
@@ -188,9 +189,6 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
             [self subscribeToUbiquitosStoreNotifications];
             [self preventLockSwitchingToUbiquitosStore];
             [self notifyDelegateThatCoreDataStackCreatedForUbiquitos:YES];
-            CDBCoreDataStoreState state = self.state;
-            state = CDBAddStoreState(state, CDBCoreDataStoreUbiquitosConnected);
-            [self changeStoreStateTo:state];
         }
     }
     
@@ -316,6 +314,10 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
 }
 
 - (void)dismissAndDisableLocalCoreDataStack {
+    [_localContext performBlockAndWait:^{
+        [_localContext save:nil];
+    }];
+    
     self.localStoreDisabled = YES;
 
     _localContext = nil;
@@ -328,6 +330,10 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
 }
 
 - (void)dismissAndDisableUbiquitosCoreDataStack {
+    [_ubiquitosContext performBlockAndWait:^{
+        [_ubiquitosContext save:nil];
+    }];
+
     self.ubiquitosStoreDisabled = YES;
     
     [self unsubscribeFromUbiquitosStoreNotifications];
@@ -468,6 +474,9 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
     
     BOOL shouldPostDidChangeNotification = NO;
     
+    if (_ubiquitosStoreCoordinator != nil) {
+        incomingState = CDBAddStoreState(incomingState, CDBCoreDataStoreUbiquitosConnected);
+    }
     
     if (CDBCheckStoreState(incomingState, CDBCoreDataStoreUbiquitosSelected) == NO) {
         incomingState = CDBRemoveStoreState(incomingState, CDBCoreDataStoreUbiquitosActive);
@@ -867,6 +876,250 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
             }
         }];
     }
+}
+
+#pragma mark - class -
+
+#pragma mark duplicates handling
+
++ (void)performRemovingDublicatesForEntity:(NSEntityDescription * _Nullable)entity
+                         uniquePropertyKey:(NSString * _Nullable)uniquePropertyKey
+                              timestampKey:(NSString * _Nullable)timestampKey
+                              usingContext:(NSManagedObjectContext * _Nullable)context
+                                     error:(NSError **)error {
+    
+    NSArray * valuesWithDupes = [self valuesWithDublicatesForEntity:entity
+                                                  uniquePropertyKey:uniquePropertyKey
+                                                       usingContext:context
+                                                              error:error];
+    
+    
+    if (*error != nil) {
+        RLogCDB(YES, @"failed to fetch values with dupes for unique key - %@, entity %@",
+                uniquePropertyKey, entity.name);
+        return;
+    }
+    
+    RLogCDB(YES, @"found %ld not uniqued keys for entity %@",
+            (unsigned long) valuesWithDupes.count, entity.name);
+    
+    [self resolveDuplicatesForEntity:entity
+                   uniquePropertyKey:uniquePropertyKey
+                        timestampKey:timestampKey
+           usingValuesWithDublicates:valuesWithDupes
+                             context:context
+                               error:error];
+    
+    if (*error != nil) {
+        RLogCDB(YES, @"failed to resolve dupes for unique key - %@, timestamp key - %@, entity %@",
+                uniquePropertyKey, timestampKey, entity.name);
+        return;
+    }
+    
+    [context performBlockAndWait:^{
+        [context save:error];
+        [context reset];
+    }];
+}
+
++ (NSArray *)valuesWithDublicatesForEntity:(NSEntityDescription * _Nullable)entity
+                         uniquePropertyKey:(NSString * _Nullable)uniquePropertyKey
+                              usingContext:(NSManagedObjectContext * _Nullable)context
+                                     error:(NSError **)error {
+    if (entity == nil
+        || uniquePropertyKey.length == 0
+        || context == nil) {
+        return nil;
+    }
+    
+    //    NSExpression * keyPathExpression = [NSExpression expressionForKeyPath:uniquePropertyKey];
+    //    NSExpression * countExpression = [NSExpression expressionForFunction:@"count:" arguments:@[keyPathExpression]];
+    NSExpression *countExpression = [NSExpression expressionWithFormat:@"count:(%K)", uniquePropertyKey];
+    NSExpressionDescription * countExpressionDescription = [[NSExpressionDescription alloc] init];
+    [countExpressionDescription setName:@"count"];
+    [countExpressionDescription setExpression:countExpression];
+    [countExpressionDescription setExpressionResultType:NSInteger64AttributeType];
+    NSAttributeDescription * uniqueAttribute = [[entity attributesByName] objectForKey:uniquePropertyKey];
+    
+    NSFetchRequest * request = [NSFetchRequest fetchRequestWithEntityName:entity.name];
+    [request setPropertiesToFetch:@[uniqueAttribute, countExpressionDescription]];
+    [request setPropertiesToGroupBy:@[uniqueAttribute]];
+    [request setResultType:NSDictionaryResultType];
+    
+    NSArray * fetchedDictionaries = [context executeFetchRequest:request
+                                                           error:error];
+    
+    NSMutableArray * result = [NSMutableArray array];
+    for (NSDictionary * dict in fetchedDictionaries) {
+        NSNumber * count = dict[@"count"];
+        if ([count integerValue] > 1) {
+            [result addObject:dict[uniquePropertyKey]];
+        }
+    }
+    
+    return [result copy];
+}
+
++ (void)resolveDuplicatesForEntity:(NSEntityDescription * _Nullable)entity
+                 uniquePropertyKey:(NSString * _Nullable)uniquePropertyKey
+                      timestampKey:(NSString * _Nullable)timestampKey
+         usingValuesWithDublicates:(NSArray *)valuesWithDupes
+                           context:(NSManagedObjectContext * _Nullable)context
+                             error:(NSError **)error {
+    
+    NSFetchRequest * dupeRequest = [NSFetchRequest fetchRequestWithEntityName:entity.name];
+    [dupeRequest setIncludesPendingChanges:NO];
+    NSPredicate * predicate = [NSPredicate predicateWithFormat:@"%K IN (%@)", uniquePropertyKey, valuesWithDupes];
+    [dupeRequest setPredicate:predicate];
+    NSSortDescriptor * uniquePropertySorted = [NSSortDescriptor sortDescriptorWithKey:uniquePropertyKey
+                                                                            ascending:YES];
+    [dupeRequest setSortDescriptors:@[uniquePropertySorted]];
+    
+    NSArray * fetchedDupes = [context executeFetchRequest:dupeRequest
+                                                    error:error];
+    
+    if (*error != nil) {
+        return;
+    }
+    
+    NSUInteger removedDupesCount = 0;
+    
+    NSManagedObject * prevObject = nil;
+    for (NSManagedObject * duplicate in fetchedDupes) {
+        if (prevObject != nil) {
+            NSString * prevObjectUniqueValue = [prevObject valueForKey:uniquePropertyKey];
+            NSString * duplicateUniqueValue = [duplicate valueForKey:uniquePropertyKey];
+            if ([duplicateUniqueValue isEqualToString:prevObjectUniqueValue]) {
+                NSString * prevObjectTimestamp = [prevObject valueForKey:timestampKey];
+                NSString * duplicateTimestamp = [duplicate valueForKey:timestampKey];
+                if ([duplicateTimestamp compare:prevObjectTimestamp] == NSOrderedAscending) {
+                    [context deleteObject:duplicate];
+                } else {
+                    [context deleteObject:prevObject];
+                    prevObject = duplicate;
+                }
+                removedDupesCount++;
+            } else {
+                prevObject = duplicate;
+            }
+        } else {
+            prevObject = duplicate;
+        }
+    }
+    RLogCDB(YES, @"delete %ld dupes for unique key - %@, using newer timestamp logic at key - %@, entity %@",
+            (unsigned long)removedDupesCount, uniquePropertyKey, timestampKey, entity.name);
+}
+
++ (void)performBatchPopulationForEntity:(NSEntityDescription *)entity
+                usingPropertiesToUpdate:(NSDictionary *)propertiesToUpdate
+                              predicate:(NSPredicate *)predicate
+                              inContext:(NSManagedObjectContext *)context {
+    if (entity == nil
+        || context == nil
+        || propertiesToUpdate == nil) {
+        return;
+    }
+    
+    RLogCDB(YES, @"update entity %@ with %@", entity.name, propertiesToUpdate);
+    
+    NSBatchUpdateRequest * request = [[NSBatchUpdateRequest alloc] initWithEntity:entity];
+    request.predicate = [NSPredicate predicateWithFormat:@"uid = nil"];
+    request.propertiesToUpdate = propertiesToUpdate;
+    request.resultType = NSUpdatedObjectsCountResultType;
+    
+    NSError * error = nil;
+    NSBatchUpdateResult * result = (NSBatchUpdateResult *)[context executeRequest:request
+                                                                            error:&error];
+    if (error != nil) {
+        RLogCDB(YES, @" failed update entity %@ with %@", entity.name, error);
+        return;
+    }
+    
+    RLogCDB(YES, @"%@ entities updated entity %@", result.result, entity.name);
+}
+
++ (void)performBatchUIDsPopulationForEntity:(NSEntityDescription *)entity
+                     usingUniquePropertyKey:(NSString * _Nullable)uniquePropertyKey
+                                  batchSize:(NSUInteger)batchSize
+                                  inContext:(NSManagedObjectContext *)context {
+    if (entity == nil
+        || context == nil
+        || uniquePropertyKey.length == 0) {
+        return;
+    }
+    batchSize = 7;
+    
+    if (batchSize == 0) {
+        batchSize = 1000;
+    }
+    
+    NSFetchRequest * request = [NSFetchRequest fetchRequestWithEntityName:entity.name];
+    request.predicate = [NSPredicate predicateWithFormat:@"%K = nil", uniquePropertyKey];
+    request.fetchBatchSize = batchSize;
+    
+    NSError * error = nil;
+    NSArray<NSManagedObject *> * results = [context executeFetchRequest:request
+                                                                  error:&error];
+    
+    if (error != nil) {
+        RLogCDB(YES, @" failed fetch empty UID objects for entity %@ at unique key - %@ - with %@",
+                entity.name, uniquePropertyKey, error);
+        return;
+    }
+    
+    NSUInteger currentIndex = 0;
+    
+    while (error == nil
+           && currentIndex < results.count) {
+        NSUInteger maxAvailableLenght = results.count - currentIndex;
+        NSUInteger length = maxAvailableLenght < batchSize ? maxAvailableLenght
+                                                           : batchSize;
+        NSRange currentBatchRange = NSMakeRange(currentIndex, length);
+        if (NSMaxRange(currentBatchRange) <= results.count) {
+            @autoreleasepool {
+                NSArray * batch = [results subarrayWithRange:currentBatchRange];
+                [self populateUIDsOfManagedObjects:batch
+                 usingUniquePropertyKey:(NSString * _Nullable)uniquePropertyKey
+                                         inContext:context
+                                             error:&error];
+            }
+        }
+        
+        currentIndex = NSMaxRange(currentBatchRange);
+    }
+    
+    if (error != nil) {
+        RLogCDB(YES, @" failed update UIDs for entity %@  at unique key - %@ - with %@",
+                entity.name, uniquePropertyKey, error);
+        return;
+    }
+    
+    RLogCDB(YES, @"%lu UIDs created at unique key - %@ - for entity %@",
+            (unsigned long)results.count, uniquePropertyKey, entity.name);
+}
+
++ (void)populateUIDsOfManagedObjects:(NSArray<NSManagedObject *> *)mananagedObjects
+              usingUniquePropertyKey:(NSString * _Nullable)uniquePropertyKey
+                           inContext:(NSManagedObjectContext *)context
+                               error:(NSError **)error {
+    for (NSManagedObject * object in mananagedObjects) {
+        [object setPrimitiveValue:[self generateEntityUID]
+                           forKey:uniquePropertyKey];
+    }
+    [context performBlockAndWait:^{
+        [context save:error];
+        [context reset];
+    }];
+}
+
++ (NSDate *)generateTimestamp {
+    NSDate * result = [NSDate date];
+    return result;
+}
+
++ (NSString *)generateEntityUID {
+    NSString * result = [Identify makeId];
+    return result;
 }
 
 @end

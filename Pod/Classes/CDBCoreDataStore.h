@@ -125,10 +125,31 @@ BOOL CDBCheckStoreState(CDBCoreDataStoreState state, NSUInteger option);
  * store should be closed (it should have no connected store coordinators)
  **/
 
-- (void)removeCoreDataStoreAtURL:(NSURL *)URL
-                      completion:(CDBErrorCompletion)completion;
+- (void)removeCoreDataStoreAtURL:(NSURL * _Nonnull)URL
+                      completion:(CDBErrorCompletion _Nullable)completion;
 
 - (NSPersistentStoreCoordinator * _Nullable)defaultStoreCoordinator;
+
+#pragma mark deduplication helpers
+
++ (void)performRemovingDublicatesForEntity:(NSEntityDescription * _Nonnull)entity
+                         uniquePropertyKey:(NSString * _Nonnull)uniquePropertyKey
+                              timestampKey:(NSString * _Nonnull)timestampKey
+                              usingContext:(NSManagedObjectContext * _Nonnull)context
+                                     error:(NSError * _Nullable * _Nullable)error;
+
++ (void)performBatchPopulationForEntity:(NSEntityDescription * _Nonnull)entity
+                usingPropertiesToUpdate:(NSDictionary * _Nonnull)propertiesToUpdate
+                              predicate:(NSPredicate * _Nonnull)predicate
+                              inContext:(NSManagedObjectContext * _Nonnull)context;
+
++ (void)performBatchUIDsPopulationForEntity:(NSEntityDescription * _Nonnull)entity
+                     usingUniquePropertyKey:(NSString * _Nonnull)uniquePropertyKey
+                                  batchSize:(NSUInteger)batchSize
+                                  inContext:(NSManagedObjectContext * _Nonnull)context;
+
++ (NSDate * _Nonnull)generateTimestamp;
++ (NSString * _Nonnull)generateEntityUID;
 
 @end
 

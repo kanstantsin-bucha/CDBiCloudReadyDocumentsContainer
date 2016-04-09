@@ -25,6 +25,9 @@
   "dependencies": {
     "CDBKit": [
       "~> 0.0"
+    ],
+    "Identify": [
+      "~> 0.1"
     ]
   }
 }

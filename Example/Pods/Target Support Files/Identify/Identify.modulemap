@@ -1,0 +1,6 @@
+framework module Identify {
+  umbrella header "Identify-umbrella.h"
+
+  export *
+  module * { export * }
+}

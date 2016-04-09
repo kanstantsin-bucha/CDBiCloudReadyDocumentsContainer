@@ -40,6 +40,7 @@ NSString * _Nonnull CDBCoreDataStoreDidChangeNotification = @"CDBCoreDataStoreDi
 @property (strong, nonatomic, readwrite) NSManagedObjectContext * ubiquitosContext;
 @property (strong, nonatomic, readwrite) NSPersistentStore * ubiqutosStore;
 @property (strong, nonatomic) NSURL * ubiquitosStoreURL;
+@property (strong, nonatomic, readwrite) NSURL * ubiquitosTempStoreURL;
 @property (strong, nonatomic, readwrite) NSPersistentStoreCoordinator * ubiquitosStoreCoordinator;
 
 @end
@@ -174,22 +175,25 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
     if (_ubiquitosStoreCoordinator == nil
         && self.storeName != nil
         && self.storeModel != nil) {
-        NSPersistentStoreCoordinator * storeCoordinator = [self defaultStoreCoordinator];
-        
-        NSError * error = nil;
-        NSPersistentStore * store =
+//        NSURL * ubiquitosStoreURL = [[NSFileManager new] URLForUbiquityContainerIdentifier:nil];
+//        if (ubiquitosStoreURL != nil) {
+            NSPersistentStoreCoordinator * storeCoordinator = [self defaultStoreCoordinator];
+            
+            NSError * error = nil;
+            NSPersistentStore * store =
             [storeCoordinator addPersistentStoreWithType:NSSQLiteStoreType
                                            configuration:nil
-                                                     URL:self.ubiquitosStoreURL
+                                                     URL:self.ubiquitosTempStoreURL
                                                  options:self.ubiquitosStoreOptions
                                                    error:&error];
-        if (error == nil) {
-            _ubiquitosStoreCoordinator = storeCoordinator;
-            _ubiqutosStore = store;
-            [self subscribeToUbiquitosStoreNotifications];
-            [self preventLockSwitchingToUbiquitosStore];
-            [self notifyDelegateThatCoreDataStackCreatedForUbiquitos:YES];
-        }
+            if (error == nil) {
+                _ubiquitosStoreCoordinator = storeCoordinator;
+                _ubiqutosStore = store;
+                [self subscribeToUbiquitosStoreNotifications];
+                [self preventLockSwitchingToUbiquitosStore];
+                [self notifyDelegateThatCoreDataStackCreatedForUbiquitos:YES];
+            }
+//        }
     }
     
     return _ubiquitosStoreCoordinator;
@@ -213,11 +217,11 @@ CDBCoreDataStoreState CDBRemoveStoreState(CDBCoreDataStoreState state, NSUIntege
 
 - (NSURL *)ubiquitosStoreURL {
     NSURL * result = [self loadUbiquitosStoreURLUsingStoreName:self.storeName];
-    
-    if (result == nil) {
-        result = [[self applicationDirectoryURLForPath:NSLibraryDirectory] URLByAppendingPathComponent:self.storeName];
-    }
-    
+    return result;
+}
+
+- (NSURL *)ubiquitosTempStoreURL {
+    NSURL * result = [[self applicationDirectoryURLForPath:NSLibraryDirectory] URLByAppendingPathComponent:self.storeName];;
     return result;
 }
 

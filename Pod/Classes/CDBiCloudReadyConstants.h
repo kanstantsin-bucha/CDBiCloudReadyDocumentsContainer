@@ -24,9 +24,7 @@ typedef NS_ENUM(NSUInteger, CDBContaineriCloudState) {
     CDBContaineriCloudAccessGranted = 2,
     CDBContaineriCloudUbiquitosContainerAvailable = 3, // Connection established
     CDBContaineriCloudRequestingInfo = 4, // Loading documents list
-    CDBContaineriCloudMetadata = 5, // Some of documents has only metadata
-    CDBContaineriCloudDownloaded = 6, // All documents downloaded but some of them has previous versions
-    CDBContaineriCloudCurrent = 7 // All documents in a local store has the most current state
+    CDBContaineriCloudDocumentsReady = 5, // Has cloud documents
 };
 
 #define StringFromCDBContaineriCloudState(enum) (([@[\

@@ -444,49 +444,25 @@
 
 - (void)updateFilesWithCompletion:(CDBCompletion)completion {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-    
-        __block CDBContaineriCloudState state = CDBContaineriCloudCurrent;
         
         NSMutableArray * documents = [NSMutableArray array];
         NSMutableArray * documentNames = [NSMutableArray array];
         
         [self.metadataQuery enumerateResultsUsingBlock:^(NSMetadataItem * item, NSUInteger idx, BOOL *stop) {
             NSURL * fileURL = [item valueForAttribute:NSMetadataItemURLKey];
-            NSString * fileName = [item valueForAttribute:NSMetadataItemFSNameKey];
             
             CDBDocument * document = [CDBDocument documentWithFileURL:fileURL
                                                              delegate:self];
             
             [documents addObject:document];
             [documentNames addObject:document.localizedName];
-            
-            switch (document.fileState) {
-                case CDBFileUbiquitousMetadataOnly: {
-                    state = CDBContaineriCloudMetadata;
-                    [self startDownloadingDocumentWithURL:fileURL
-                                                  andName:fileName];
-                } break;
-                    
-                case CDBFileUbiquitousDownloaded: {
-                    if (state == CDBContaineriCloudCurrent) {
-                        state = CDBContaineriCloudDownloaded;
-                    }
-                } break;
-                    
-                case CDBFileUbiquitousCurrent: {
-                    
-                } break;
-                    
-                default:
-                    break;
-            }
         }];
         
         __weak typeof (self) wself = self;
         dispatch_async(dispatch_get_main_queue(), ^{
             self.cloudDocuments = [documents copy];
             self.cloudDocumentNames = [documentNames copy];
-            [self changeStateTo:state];
+            [self changeStateTo:CDBContaineriCloudDocumentsReady];
             if (completion != nil) {
                 completion();
             }
@@ -543,15 +519,7 @@
 
         } break;
         
-        case CDBContaineriCloudMetadata: {
-        } break;
-        
-        case CDBContaineriCloudDownloaded: {
-            
-        } break;
-        
-        case CDBContaineriCloudCurrent: {
-            
+        case CDBContaineriCloudDocumentsReady: {
         } break;
             
         default:
@@ -738,9 +706,9 @@
 }
 
 - (BOOL)isiCloudDocumentsDownloaded {
-    BOOL result = self.state == CDBContaineriCloudDownloaded
-                  || self.state == CDBContaineriCloudCurrent;
-    return result;
+//    BOOL result = self.state == CDBContaineriCloudDownloaded
+//                  || self.state == CDBContaineriCloudCurrent;
+    return NO;
 }
 
 - (BOOL)isiCloudOperable {

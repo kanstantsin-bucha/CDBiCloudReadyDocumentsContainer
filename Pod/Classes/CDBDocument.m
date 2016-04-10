@@ -48,9 +48,67 @@
     
     [self resolveConflict];
     
-    if ([self.delegate respondsToSelector:@selector(didAutoresolveConflictInCDBDocument:)]) {
-        [self.delegate didAutoresolveConflictInCDBDocument:self];
+    __weak typeof (self) wself = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if ([wself.delegate respondsToSelector:@selector(didAutoresolveConflictInCDBDocument:)]) {
+            [wself.delegate didAutoresolveConflictInCDBDocument:wself];
+        }
+    });
+    
+}
+
+#pragma mark - Protocols -
+
+#pragma mark NSFilePresenter
+
+- (void)savePresentedItemChangesWithCompletionHandler:(void (^)(NSError * __nullable errorOrNil))completionHandler {
+    DLogCDB(@"%@", self.fileName);
+}
+
+- (void)accommodatePresentedItemDeletionWithCompletionHandler:(void (^)(NSError * __nullable errorOrNil))completionHandler {
+    DLogCDB(@"%@", self.fileName);
+}
+
+- (void)presentedItemDidMoveToURL:(NSURL *)newURL {
+    [super presentedItemDidMoveToURL:newURL];
+    DLogCDB(@"%@ new URL: %@", self.fileName, newURL);
+}
+
+- (void)presentedItemDidChange {
+    DLogCDB(@"%@", self.fileName);
+}
+
+#pragma mark NSFilePresenter directory
+
+//// This don't called for now iOS 9.3 - apple registered bug
+//- (void)accommodatePresentedSubitemDeletionAtURL:(NSURL *)url
+//                               completionHandler:(void (^)(NSError * __nullable errorOrNil))completionHandler {
+//    [super accommodatePresentedSubitemDeletionAtURL:url
+//                                  completionHandler:completionHandler];
+//}
+
+//// This don't called for now iOS 9.3 - apple registered bug
+//- (void)presentedSubitemDidAppearAtURL:(NSURL *)url {
+//    [super presentedSubitemDidAppearAtURL:url];
+//}
+
+//// This called only from time to time for now iOS 9.3 - apple registered bug
+//- (void)presentedSubitemAtURL:(NSURL *)oldURL
+//                 didMoveToURL:(NSURL *)newURL {
+//    NSLog(@"presentedSubitemAtURL");
+//}
+
+- (void)presentedSubitemDidChangeAtURL:(NSURL *)URL {
+    DLogCDB(@"%@", self.fileName);
+    if ([self.delegate respondsToSelector:@selector(CDBDocumentDirectory:didChangeSubitemAtURL:)] == NO) {
+        return;
     }
+    
+    __weak typeof (self) wself = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [wself.delegate CDBDocumentDirectory:wself
+                       didChangeSubitemAtURL:URL];
+    });
 }
 
 #pragma mark - Public -

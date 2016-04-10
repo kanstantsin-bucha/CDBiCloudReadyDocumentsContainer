@@ -56,7 +56,7 @@ CDBDocumentDelegate
 **/
 
 @property (assign, nonatomic, readonly, getter=isiCloudDocumentsDownloaded) BOOL iCloudDocumentsDownloaded;
-@property (strong, nonatomic, readonly, nonnull) NSArray<CDBDocument *> * cloudDocuments;
+//@property (strong, nonatomic, readonly, nonnull) NSArray<CDBDocument *> * cloudDocuments;
 @property (strong, nonatomic, readonly, nonnull) NSArray<NSString *> * cloudDocumentNames;
 
 + (instancetype _Nullable)sharedInstance;
@@ -163,10 +163,18 @@ CDBDocumentDelegate
 
 @optional
 
-- (void)container:(CDBDocumentsContainer * _Nonnull)container
+- (void)CDBContainer:(CDBDocumentsContainer * _Nonnull)container
     iCloudStatedidChangeTo:(CDBContaineriCloudState)state;
-- (void)iCloudDocumentsDidChangeForContainer:(CDBDocumentsContainer * _Nonnull)container;
-- (void)container:(CDBDocumentsContainer * _Nonnull)container
+
+- (void)iCloudDocumentsDidChangeForCDBContainer:(CDBDocumentsContainer * _Nonnull)container;
+
+- (void)CDBContainer:(CDBDocumentsContainer * _Nonnull)container
     didAutoresolveConflictInCDBDocument:(CDBDocument * _Nonnull)document;
+
+- (void)CDBContainer:(CDBDocumentsContainer * _Nonnull)container
+    didChangeDocumentAtURL:(NSURL * _Nullable)URL;
+    
+- (void)CDBContainer:(CDBDocumentsContainer * _Nonnull)container
+    didRemoveDocumentAtURL:(NSURL * _Nullable)URL;
 
 @end

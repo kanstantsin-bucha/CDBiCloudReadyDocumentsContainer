@@ -1,24 +1,24 @@
 
 
-#import "CDBDocumentsContainer.h"
+#import "CDBCloudDocuments.h"
 
 
-#define VZiCloudDocumentsDirectoryPath @"Documents"
+#define CDBiCloudDocumentsDirectoryPathComponent @"Documents"
 
 
-@interface CDBDocumentsContainer ()
+@interface CDBCloudDocuments ()
 
-@property (copy, nonatomic) NSString * containerID;
-@property (copy, nonatomic) NSString * documentsDirectoryPath;
+@property (assign, nonatomic) CDBCloudState state;
+
+@property (copy, nonatomic) NSString * cloudPathComponent;
 @property (copy, nonatomic) NSString * requestedFilesExtension;
 
-@property (strong, nonatomic) CDBDocument * rootCloudDocumentsDirectory;
+@property (strong, nonatomic) CDBDocument * documentsDirectoryWatchdog;
 
-//@property (strong, nonatomic, readwrite) NSArray<CDBDocument *> * cloudDocuments;
+@property (strong, nonatomic, readwrite) NSArray<NSURL *> * cloudDocumentURLs;
 @property (strong, nonatomic, readwrite) NSArray<NSString *> * cloudDocumentNames;
-@property (assign, nonatomic, readwrite) CDBContaineriCloudState state;
 
-@property (weak, nonatomic) id<CDBDocumentsContainerDelegate> delegate;
+@property (weak, nonatomic) id<CDBCloudDocumentsDelegate> delegate;
 
 @property (copy, nonatomic, readonly) NSURL * ubiquityDocumentsDirectoryURL;
 
@@ -31,57 +31,22 @@
 @end
 
 
-@implementation CDBDocumentsContainer
+@implementation CDBCloudDocuments
 @synthesize localDocumentsURL = _localDocumentsURL;
 
 #pragma mark - Life Cycle -
 
-+ (instancetype)sharedInstance {
-    static CDBDocumentsContainer * _sharedInstance = nil;
-    static dispatch_once_t predicate;
-    dispatch_once(&predicate, ^{
-        _sharedInstance = [[super allocWithZone:NULL] init];
-    });
-    return _sharedInstance;
-}
-
-+ (id)allocWithZone:(NSZone *)zone {
-    return [self sharedInstance];
-}
-
-- (id)copyWithZone:(NSZone *)zone {
-    return self;
-}
-
-- (void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-}
-
-- (void)initiateUsingContainerIdentifier:(NSString * _Nullable)ID
-                  documentsDirectoryPath:(NSString * _Nullable)path
-                 requestedFilesExtension:(NSString * _Nullable)extension {
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(handleUbiquityIdentityDidChangeNotification:)
-                                                 name:NSUbiquityIdentityDidChangeNotification
-                                               object:nil];
-    self.containerID = ID;
-    self.documentsDirectoryPath = path;
-    if (self.documentsDirectoryPath.length == 0) {
-        self.documentsDirectoryPath = VZiCloudDocumentsDirectoryPath;
-    }
-    self.requestedFilesExtension = extension;
-    if (extension.length == 0) {
-        self.requestedFilesExtension = @"*";
+- (void)initiateUsingCloudPathComponent:(NSString * _Nullable)pathComponent {
+    if (pathComponent.length == 0) {
+        self.cloudPathComponent = CDBiCloudDocumentsDirectoryPathComponent;
+    } else {
+        self.cloudPathComponent = pathComponent;
     }
     
-    [self performCloudStateCheckWithCompletion:nil];
+    self.requestedFilesExtension = @"*";
 }
 
 #pragma mark - Notifications -
-
-- (void)handleUbiquityIdentityDidChangeNotification:(NSNotification *)notification {
-    [self performCloudStateCheckWithCompletion:nil];
-}
 
 - (void)handleMetadataQueryDidUpdateNotification:(NSNotification *)notification {
     [self.metadataQuery disableUpdates];
@@ -114,7 +79,7 @@
 
 - (void)CDBDocumentDirectory:(CDBDocument *)document
        didChangeSubitemAtURL:(NSURL *)URL {
-    if (document != self.rootCloudDocumentsDirectory) {
+    if (document != self.documentsDirectoryWatchdog) {
         return;
     }
     
@@ -137,53 +102,22 @@
 
 #pragma mark - Public -
 
-- (void)performCloudStateCheckWithCompletion:(dispatch_block_t)completion {
-    dispatch_async(dispatch_get_global_queue (DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
-        id cloudToken = [self.fileManager ubiquityIdentityToken];
-        if (cloudToken != nil) {
-            self.ubiquityContainer = [self.fileManager URLForUbiquityContainerIdentifier:self.containerID];
-            [self ensureThatUbiquitousDocumentsDirectoryPresents];
-        }
-        dispatch_async(dispatch_get_main_queue (), ^(void) {
-            
-            BOOL cloudIsAvailable = cloudToken != nil;
-            BOOL ubiquityContainerIsAvailable = self.ubiquityContainer != nil;
-            
-            CDBContaineriCloudState currentState;
-            
-            if (ubiquityContainerIsAvailable == NO) {
-                currentState = CDBContaineriCloudAccessGranted;
-            } else {
-                currentState = CDBContaineriCloudUbiquitosContainerAvailable;
-            }
-            
-            if (cloudIsAvailable == NO) {
-                currentState = CDBContaineriCloudAccessDenied;
-            }
-            
-            [self changeStateTo:currentState];
-            if (completion != nil) {
-                completion();
-            }
-        });
-    });
-}
 
-- (void)requestCloudAccess:(CDBiCloudAccessBlock)block {
-    __weak typeof (self) wself = self;
-    [self initiateSynchronizationWithCompletion:^(NSError * _Nullable error) {
-        if (block == nil) {
-            return;
-        }
-        block(wself.iCloudDocumentsDownloaded, wself.state, error);
-    }];
-}
+//- (void)requestCloudAccess:(CDBiCloudAccessBlock)block {
+//    __weak typeof (self) wself = self;
+//    [self initiateSynchronizationWithCompletion:^(NSError * _Nullable error) {
+//        if (block == nil) {
+//            return;
+//        }
+//        block(wself.iCloudDocumentsDownloaded, wself.state, error);
+//    }];
+//}
 
-- (void)addDelegate:(id<CDBDocumentsContainerDelegate> _Nonnull)delegate {
+- (void)addDelegate:(id<CDBCloudDocumentsDelegate> _Nonnull)delegate {
     self.delegate = delegate;
 }
 
-- (void)removeDelegate:(id<CDBDocumentsContainerDelegate> _Nonnull)delegate {
+- (void)removeDelegate:(id<CDBCloudDocumentsDelegate> _Nonnull)delegate {
     if (self.delegate != delegate) {
         return;
     }
@@ -398,29 +332,28 @@
 
 #pragma mark Synchronize documents
 
-- (void)initiateSynchronizationWithCompletion:(CDBErrorCompletion)completion {
-    if (self.state >= CDBContaineriCloudRequestingInfo) {
-        if (completion != nil) {
-            completion(nil);
-        }
-    }
-    
-    if (self.state < CDBContaineriCloudUbiquitosContainerAvailable) {
-        [self performCloudStateCheckWithCompletion:^{
-            [self startSynchronizationWithCompletion:completion];
-        }];
-        return;
-    }
-    
-    [self startSynchronizationWithCompletion:completion];
-}
+//- (void)initiateSynchronizationWithCompletion:(CDBErrorCompletion)completion {
+//    if (self.state >= CDBContaineriCloudRequestingInfo) {
+//        if (completion != nil) {
+//            completion(nil);
+//        }
+//    }
+//    
+//    if (self.state < CDBContaineriCloudUbiquitosContainerAvailable) {
+//        [self performCloudStateCheckWithCompletion:^{
+//            [self startSynchronizationWithCompletion:completion];
+//        }];
+//        return;
+//    }
+//    
+//    [self startSynchronizationWithCompletion:completion];
+//}
 
 - (void)startSynchronizationWithCompletion:(CDBErrorCompletion)completion {
-    if (self.state < CDBContaineriCloudUbiquitosContainerAvailable) {
-        if (completion != nil) {
-            completion([self iCloudNotAcceessableErrorUsingState:self.state]);
-        }
-        return;
+    if (self.documentsDirectoryWatchdog == nil) {
+        self.documentsDirectoryWatchdog = [CDBDocument documentWithFileURL:self.ubiquityDocumentsDirectoryURL
+                                                                  delegate:self];
+        [NSFileCoordinator addFilePresenter:self.documentsDirectoryWatchdog];
     }
     
     [self.metadataQuery setSearchScopes:@[NSMetadataQueryUbiquitousDocumentsScope]];
@@ -439,9 +372,7 @@
         
         BOOL startedQuery = [self.metadataQuery startQuery];
         if (startedQuery == NO) {
-            NSLog(@"[CDBiCloudReadyDocumentsContainer] Failed to start metadata query");
-        } else {
-            [self changeStateTo:CDBContaineriCloudRequestingInfo];
+            NSLog(@"[CDBCloudDocuments] Failed to start metadata query");
         }
         
         if (completion != nil) {
@@ -451,26 +382,22 @@
 }
 
 - (void)updateFilesWithCompletion:(CDBCompletion)completion {
+    __weak typeof (self) wself = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
-//        NSMutableArray * documents = [NSMutableArray array];
+        NSMutableArray * documentsURLs = [NSMutableArray array];
         NSMutableArray * documentNames = [NSMutableArray array];
         
-        [self.metadataQuery enumerateResultsUsingBlock:^(NSMetadataItem * item, NSUInteger idx, BOOL *stop) {
+        [wself.metadataQuery enumerateResultsUsingBlock:^(NSMetadataItem * item, NSUInteger idx, BOOL *stop) {
             NSURL * fileURL = [item valueForAttribute:NSMetadataItemURLKey];
-            
-//            CDBDocument * document = [CDBDocument documentWithFileURL:fileURL
-//                                                             delegate:self];
-            
-//            [documents addObject:document];
+
+            [documentsURLs addObject:fileURL];
             [documentNames addObject:fileURL.lastPathComponent];
         }];
         
-        __weak typeof (self) wself = self;
         dispatch_async(dispatch_get_main_queue(), ^{
-//            self.cloudDocuments = [documents copy];
-            self.cloudDocumentNames = [documentNames copy];
-            [self changeStateTo:CDBContaineriCloudDocumentsReady];
+            wself.cloudDocumentURLs = [documentsURLs copy];
+            wself.cloudDocumentNames = [documentNames copy];
             if (completion != nil) {
                 completion();
             }
@@ -482,6 +409,10 @@
 }
 
 - (void)dissmissSynchronization {
+    if (self.documentsDirectoryWatchdog != nil) {
+        [NSFileCoordinator removeFilePresenter:self.documentsDirectoryWatchdog];
+        self.documentsDirectoryWatchdog = nil;
+    }
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [_metadataQuery stopQuery];
     _metadataQuery = nil;
@@ -493,55 +424,35 @@
     BOOL downloading = [self.fileManager startDownloadingUbiquitousItemAtURL:fileURL
                                                                        error:&error];
     if (downloading == NO){
-        NSLog(@"[CDBiCloudReadyDocumentsContainer] Ubiquitous item with name %@ \
+        NSLog(@"[CDBCloudDocuments] Ubiquitous item with name %@ \
               \nfailed to start downloading with error: %@", name, error);
     }
 }
 
 #pragma mark Handle state changes
 
-- (void)changeStateTo:(CDBContaineriCloudState)state {
-    if (self.state == state) {
-        return;
-    }
+- (void)updateForConnectionState:(CDBCloudState)state {
     
-    NSLog(@"[CDBiCloudReadyDocumentsContainer] Changed state to %@",
-          StringFromCDBContaineriCloudState(state));
+    NSLog(@"[CDBCloudDocuments] update for state %@",
+          StringFromCloudState(state));
     
     self.state = state;
+    
     switch (state) {
-        case CDBContaineriCloudAccessGranted: {
-            [self dissmissSynchronization];
-            
-            if (self.rootCloudDocumentsDirectory != nil) {
-                [NSFileCoordinator removeFilePresenter:self.rootCloudDocumentsDirectory];
-                self.rootCloudDocumentsDirectory = nil;
-            }
-        } break;
         
-        case CDBContaineriCloudAccessDenied: {
+        case CDBCloudAccessDenied: {
             [self dissmissSynchronization];
             [self showDeniedAccessAlert];
-            if (self.rootCloudDocumentsDirectory != nil) {
-                [NSFileCoordinator removeFilePresenter:self.rootCloudDocumentsDirectory];
-                self.rootCloudDocumentsDirectory = nil;
-            }
-            
+        }
+    
+        case CDBCloudAccessGranted:
+        case CDBCloudStateUndefined: {
+            [self dissmissSynchronization];
         } break;
         
-        case CDBContaineriCloudUbiquitosContainerAvailable: {
-            
-        } break;
-        
-        case CDBContaineriCloudRequestingInfo:
-        case CDBContaineriCloudDocumentsReady: {
-            if (_rootCloudDocumentsDirectory == nil) {
-                self.rootCloudDocumentsDirectory = [CDBDocument documentWithFileURL:self.ubiquityDocumentsDirectoryURL
-                                                                           delegate:self];
-                [NSFileCoordinator addFilePresenter:self.rootCloudDocumentsDirectory];
-                NSLog(@"Presenteer: %@", [NSFileCoordinator filePresenters], self.rootCloudDocumentsDirectory);
-            }
-            
+        case CDBCloudUbiquitosConеtentAvailable: {
+            [self ensureThatUbiquitousDocumentsDirectoryPresents];
+            [self startSynchronizationWithCompletion:nil];
         } break;
             
         default:
@@ -575,17 +486,17 @@
         if (error == nil) {
             return;
         }
-        NSLog(@"[CDBiCloudReadyDocumentsContainer] could not resolve ubiquituos documents directory URL %@\
+        NSLog(@"[CDBCloudDocuments] could not resolve ubiquituos documents directory URL %@\
               \n failed with error: %@",
               self.ubiquityDocumentsDirectoryURL, error);
-        NSLog(@"[CDBiCloudReadyDocumentsContainer] ubiquituos documents directory resolved to default path");
-        self.documentsDirectoryPath = VZiCloudDocumentsDirectoryPath;
+        NSLog(@"[CDBCloudDocuments] ubiquituos documents directory resolved to default path");
+        self.cloudPathComponent = CDBiCloudDocumentsDirectoryPathComponent;
         [self synchronousEnsureThatDirectoryPresentsAtURL:self.ubiquityDocumentsDirectoryURL
                                                 comletion:^(NSError *error) {
             if (error == nil) {
                 return;
             }
-            NSLog(@"[CDBiCloudReadyDocumentsContainer] unpredicable error \
+            NSLog(@"[CDBCloudDocuments] unpredicable error \
                   \ncould not resolve default ubiquituos documents directory URL %@\
                   \n failed with error: %@",
                   self.ubiquityDocumentsDirectoryURL, error);
@@ -722,7 +633,7 @@
 
 - (NSURL *)ubiquityDocumentsDirectoryURL {
     NSURL * result =
-        [self.ubiquityContainer URLByAppendingPathComponent:self.documentsDirectoryPath
+        [self.ubiquityContainer URLByAppendingPathComponent:self.cloudPathComponent
                                                 isDirectory:YES];
     return result;
 }
@@ -734,9 +645,7 @@
 }
 
 - (BOOL)isiCloudOperable {
-    BOOL result = (self.state != CDBContaineriCloudAccessGranted
-                && self.state != CDBContaineriCloudAccessDenied
-                && self.state != CDBContaineriCloudStateUndefined);
+    BOOL result = (self.state == CDBCloudUbiquitosConеtentAvailable);
     return result;
 }
 
@@ -751,9 +660,9 @@
     return result;
 }
 
-- (NSError *)iCloudNotAcceessableErrorUsingState:(CDBContaineriCloudState)state {
+- (NSError *)iCloudNotAcceessableErrorUsingState:(CDBCloudState)state {
     NSString * errorDescription = [NSString stringWithFormat:@"iCloud not acceessable with current state: %@",
-                                   StringFromCDBContaineriCloudState(state)];
+                                   StringFromCloudState(state)];
     NSDictionary * userInfo = @{NSLocalizedDescriptionKey: errorDescription};
     NSError * result = [NSError errorWithDomain:NSStringFromClass([self class])
                                            code:0
@@ -798,7 +707,7 @@
     [self synchronousEnsureThatDirectoryPresentsAtURL:localDocumentsURL
                                             comletion:^(NSError *error) {
          if (error != nil) {
-             NSLog(@"[CDBiCloudReadyDocumentsContainer] could not resolve local documents URL %@\
+             NSLog(@"[CDBCloudDocuments] could not resolve local documents URL %@\
                     \n failed with error: %@",
                     localDocumentsURL, error);
          } else {

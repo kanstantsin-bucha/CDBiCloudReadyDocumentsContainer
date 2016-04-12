@@ -9,15 +9,15 @@
 #endif
 
 
-#import "CDBiCloudReadyDocumentsContainer.h"
 #import "CDBiCloudReadyConstants.h"
+#import "CDBDocument.h"
 #import <CDBKit/CDBKit.h>
 
 
-@protocol CDBDocumentsContainerDelegate;
+@protocol CDBCloudDocumentsDelegate;
 
 
-@interface CDBDocumentsContainer : NSObject
+@interface CDBCloudDocuments : NSObject
 <
 CDBDocumentDelegate
 >
@@ -45,70 +45,37 @@ CDBDocumentDelegate
 
 @property (copy, nonatomic, readonly, nullable) NSURL * ubiquityDocumentsURL;
 
-/**
- Contains state of container container
-**/
 
-@property (assign, nonatomic, readonly) CDBContaineriCloudState state;
 
 /**
  Contains all documents that present in container
 **/
 
-@property (assign, nonatomic, readonly, getter=isiCloudDocumentsDownloaded) BOOL iCloudDocumentsDownloaded;
-//@property (strong, nonatomic, readonly, nonnull) NSArray<CDBDocument *> * cloudDocuments;
-@property (strong, nonatomic, readonly, nonnull) NSArray<NSString *> * cloudDocumentNames;
-
-+ (instancetype _Nullable)sharedInstance;
+@property (strong, nonatomic, readonly, nullable) NSArray<NSURL *> * cloudDocumentURLs;
+@property (strong, nonatomic, readonly, nullable) NSArray<NSString *> * cloudDocumentNames;
 
 /**
- Call it before use entitled
- path - documentsDirectoryPath inside container
- extension - filter iCloud documents by extension before they will be provided by a container
- Could provide nil for both arguments
+ This is for cloudConnection only
 **/
-
-- (void)initiateUsingContainerIdentifier:(NSString * _Nullable)ID
-                  documentsDirectoryPath:(NSString * _Nullable)path
-                 requestedFilesExtension:(NSString * _Nullable)extension;
+- (void)initiateUsingCloudPathComponent:(NSString * _Nullable)pathComponent;
 
 /**
- Do your things with iCloud inside this block
- First call of this block makes CDBDocumentsContainer start synchronization of ubiquitos container files
- So if you don't want wait while loading occures call it right after initiateUsingContainerIdentifier: method
- 
- It returns allDownloaded only for CDBContaineriCloudDownloaded or CDBContaineriCloudCurrent state
- That means iCloud documents are ready to roll
- 
- @example
- 
- [self requestCloudAccess:^(BOOL allDownloaded, VZiCloudState state){
-     if (allDownloaded) {
-         Do your job there
-     }
- }];
+ This is for cloudConnection only
  **/
 
-- (void)requestCloudAccess:(CDBiCloudAccessBlock _Nullable)block;
-
-/**
- Checks icloud state without starting synchronization
- Usually you don't need to call it becase initiateUsingContainerIdentifier: handle it for you
- **/
-
-- (void)performCloudStateCheckWithCompletion:(dispatch_block_t _Nullable)completion;
+- (void)updateForConnectionState:(CDBCloudState)state;
 
 /**
  Add delegate to notify changes
  **/
 
-- (void)addDelegate:(id<CDBDocumentsContainerDelegate> _Nonnull)delegate;
+- (void)addDelegate:(id<CDBCloudDocumentsDelegate> _Nonnull)delegate;
 
 /**
  Remove delegate
  **/
 
-- (void)removeDelegate:(id<CDBDocumentsContainerDelegate> _Nonnull)delegate;
+- (void)removeDelegate:(id<CDBCloudDocumentsDelegate> _Nonnull)delegate;
 
 
 /**
@@ -159,22 +126,22 @@ CDBDocumentDelegate
 @end
 
 
-@protocol CDBDocumentsContainerDelegate <NSObject>
+@protocol CDBCloudDocumentsDelegate <NSObject>
 
 @optional
 
-- (void)CDBContainer:(CDBDocumentsContainer * _Nonnull)container
-    iCloudStatedidChangeTo:(CDBContaineriCloudState)state;
+- (void)CDBContainer:(CDBCloudDocuments * _Nonnull)documents
+    iCloudStatedidChangeTo:(CDBCloudState)state;
 
-- (void)iCloudDocumentsDidChangeForCDBContainer:(CDBDocumentsContainer * _Nonnull)container;
+- (void)iCloudDocumentsDidChangeForCDBContainer:(CDBCloudDocuments * _Nonnull)documents;
 
-- (void)CDBContainer:(CDBDocumentsContainer * _Nonnull)container
+- (void)CDBContainer:(CDBCloudDocuments * _Nonnull)documents
     didAutoresolveConflictInCDBDocument:(CDBDocument * _Nonnull)document;
 
-- (void)CDBContainer:(CDBDocumentsContainer * _Nonnull)container
+- (void)CDBContainer:(CDBCloudDocuments * _Nonnull)documents
     didChangeDocumentAtURL:(NSURL * _Nullable)URL;
     
-- (void)CDBContainer:(CDBDocumentsContainer * _Nonnull)container
+- (void)CDBContainer:(CDBCloudDocuments * _Nonnull)documents
     didRemoveDocumentAtURL:(NSURL * _Nullable)URL;
 
 @end

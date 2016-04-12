@@ -8,9 +8,22 @@
 #endif
 
 
-#import "CDBiCloudReadyDocumentsContainer.h"
 #import "CDBiCloudReadyConstants.h"
 #import <CDBKit/CDBKit.h>
+
+
+@class CDBDocument;
+
+
+@protocol CDBDocumentDelegate <NSObject>
+
+@optional
+- (void)didAutoresolveConflictInCDBDocument:(CDBDocument * _Nonnull)document;
+
+- (void)CDBDocumentDirectory:(CDBDocument * _Nonnull)document
+       didChangeSubitemAtURL:(NSURL *)URL;
+
+@end
 
 
 @interface CDBDocument : UIDocument

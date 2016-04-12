@@ -11,42 +11,43 @@
 #endif
 
 
-#import "CDBiCloudReadyDocumentsContainer.h"
+#import <CDBKit/CDBKit.h>
+#import "CDBiCloudReadyConstants.h"
 
 
-extern NSString * _Nonnull CDBCoreDataStoreWillChangeNotification;
-extern NSString * _Nonnull CDBCoreDataStoreDidChangeNotification;
+extern NSString * _Nonnull CDBCloudStoreWillChangeNotification;
+extern NSString * _Nonnull CDBCloudStoreDidChangeNotification;
 
 
-@protocol CDBCoreDataStoreDelegate;
+@protocol CDBCloudStoreDelegate;
 
 
-BOOL CDBCheckStoreState(CDBCoreDataStoreState state, NSUInteger option);
+BOOL CDBCheckStoreState(CDBCloudStoreState state, NSUInteger option);
 
 
-@interface CDBCoreDataStore : NSObject
+@interface CDBCloudStore : NSObject
 
 @property (assign, nonatomic, readonly) BOOL ubiquitous;
 @property (strong, nonatomic, readonly, nullable) NSManagedObjectContext * currentContext;
-@property (weak, nonatomic, nullable) id<CDBCoreDataStoreDelegate> delegate;
+@property (weak, nonatomic, nullable) id<CDBCloudStoreDelegate> delegate;
 
 /**
  * @brief
  * if selected but not active then cloud initial sync didn't finish yet and we use local store
  * when (set local storage: 0) appears we switch to ubiquitos store and set
- CDBCoreDataStoreUbiquitosActive to 1
- CDBCoreDataStoreUbiquitosInitiated to 1
+ CDBCloudStoreUbiquitosActive to 1
+ CDBCloudStoreUbiquitosInitiated to 1
  
  * if user removes cloud content we switch to local store, post notification and set
- CDBCoreDataStoreUbiquitosSelected to 0
- CDBCoreDataStoreUbiquitosInitiated to 0
- CDBCoreDataStoreUbiquitosActive to 0
+ CDBCloudStoreUbiquitosSelected to 0
+ CDBCloudStoreUbiquitosInitiated to 0
+ CDBCloudStoreUbiquitosActive to 0
  
  * if user log out from cloud we switch to local store while waiting for log in and set
- CDBCoreDataStoreUbiquitosActive to 0
+ CDBCloudStoreUbiquitosActive to 0
  **/
 
-@property (assign, nonatomic, readonly) CDBCoreDataStoreState state;
+@property (assign, nonatomic, readonly) CDBCloudStoreState state;
 
 
 @property (strong, nonatomic, readonly, nullable) NSURL * storeModelURL;
@@ -67,8 +68,6 @@ BOOL CDBCheckStoreState(CDBCoreDataStoreState state, NSUInteger option);
 @property (strong, nonatomic, readonly, nullable) NSURL * ubiquitosStoreURL;
 @property (strong, nonatomic, readonly, nullable) NSPersistentStoreCoordinator * ubiquitosStoreCoordinator;
 
-
-+ (instancetype _Nullable)sharedInstance;
 
 - (void)initiateWithStoreName:(NSString * _Nonnull)storeName
                 storeModelURL:(NSURL * _Nonnull)modelURL;
@@ -154,7 +153,7 @@ BOOL CDBCheckStoreState(CDBCoreDataStoreState state, NSUInteger option);
 @end
 
 
-@protocol CDBCoreDataStoreDelegate <NSObject>
+@protocol CDBCloudStoreDelegate <NSObject>
 
 @optional
 
@@ -166,7 +165,7 @@ BOOL CDBCheckStoreState(CDBCoreDataStoreState state, NSUInteger option);
  * please don't change store state inside this methods
  **/
 
-- (void)CDBCoreDataStore:(CDBCoreDataStore * _Nullable)store
+- (void)CDBCloudStore:(CDBCloudStore * _Nullable)store
    switchingToUbiquitous:(BOOL)ubiquitous;
 
 /**
@@ -179,7 +178,7 @@ BOOL CDBCheckStoreState(CDBCoreDataStoreState state, NSUInteger option);
  * using [ mergeUbiquitousContentChangesUsing:] method automatically
  **/
 
-- (void)CDBCoreDataStore:(CDBCoreDataStore * _Nullable)store
+- (void)CDBCloudStore:(CDBCloudStore * _Nullable)store
     didImportUbiquitousContentChanges:(NSNotification * _Nullable)changeNotification;
 
 /**
@@ -191,11 +190,11 @@ BOOL CDBCheckStoreState(CDBCoreDataStoreState state, NSUInteger option);
  * you could perform some core data tasks with store here before it data comes to UI
  **/
 
-- (void)CDBCoreDataStore:(CDBCoreDataStore * _Nullable)store
+- (void)CDBCloudStore:(CDBCloudStore * _Nullable)store
 didCreateCoreDataStackThatUbiquitous:(BOOL)ubiquitos;
 
 
-- (void)CDBCoreDataDidChangeStateOfStore:(CDBCoreDataStore * _Nullable)store;
+- (void)CDBCoreDataDidChangeStateOfStore:(CDBCloudStore * _Nullable)store;
 
 /**
  * @brief
@@ -205,6 +204,6 @@ didCreateCoreDataStackThatUbiquitous:(BOOL)ubiquitos;
  * you probably should migrate you cloud data to local on this call or lose it forever
  **/
 
-- (void)CDBCoreDataDetectThatUserWillRemoveContentOfStore:(CDBCoreDataStore * _Nullable)store;
+- (void)CDBCoreDataDetectThatUserWillRemoveContentOfStore:(CDBCloudStore * _Nullable)store;
 
 @end

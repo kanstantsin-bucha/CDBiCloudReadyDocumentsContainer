@@ -8,7 +8,8 @@
 
 @interface CDBCloudDocuments ()
 
-@property (assign, nonatomic) CDBCloudState state;
+@property (assign, nonatomic, readwrite) BOOL ubiquitosActive;
+@property (assign, nonatomic, readonly) BOOL ubiquityContainerAccessible;
 
 @property (copy, nonatomic) NSString * cloudPathComponent;
 @property (copy, nonatomic) NSString * requestedFilesExtension;
@@ -20,13 +21,9 @@
 
 @property (weak, nonatomic) id<CDBCloudDocumentsDelegate> delegate;
 
-@property (copy, nonatomic, readonly) NSURL * ubiquityDocumentsDirectoryURL;
-
 @property (strong, nonatomic) NSMetadataQuery * metadataQuery;
 @property (strong, nonatomic, readonly) NSFileManager * fileManager;
-@property (nonatomic, strong) NSURL * ubiquityContainer;
-
-@property (assign, nonatomic, readonly, getter=isiCloudOperable) BOOL iCloudOperable;
+@property (nonatomic, strong) NSURL * ubiquityContainerURL;
 
 @end
 
@@ -34,7 +31,122 @@
 @implementation CDBCloudDocuments
 @synthesize localDocumentsURL = _localDocumentsURL;
 
-#pragma mark - Life Cycle -
+#pragma mark - property -
+
+
+- (NSURL *)presentedItemURL {
+    return nil;
+}
+
+#pragma mark Getter
+
+- (NSURL *)currentDocumentsURL {
+    NSURL * result = nil;
+    if (self.ubiquitosActive) {
+        result = self.ubiquityDocumentsURL;
+    } else {
+        result = self.localDocumentsURL;
+    }
+    return result;
+}
+
+- (BOOL)ubiquityContainerAccessible {
+    BOOL result = self.ubiquityContainerURL != nil;
+    return result;
+}
+
+- (NSURL *)ubiquityDocumentsURL {
+    NSURL * result =
+        [self.ubiquityContainerURL URLByAppendingPathComponent:self.cloudPathComponent
+                                                   isDirectory:YES];
+    return result;
+}
+
+- (NSFileManager *)fileManager {
+    NSFileManager * result = [NSFileManager new];
+    return result;
+}
+
+- (NSPredicate *)requestedFilesMetadataPredicate {
+    NSString * format = [NSString stringWithFormat:@"%%K.pathExtension LIKE '%@'", self.requestedFilesExtension];
+    NSPredicate * result = [NSPredicate predicateWithFormat:format, NSMetadataItemFSNameKey];
+    return result;
+}
+
+- (NSError *)iCloudNotAcceessableError {
+    NSString * errorDescription = @"iCloud not available";
+    NSDictionary * userInfo = @{NSLocalizedDescriptionKey: errorDescription};
+    NSError * result = [NSError errorWithDomain:NSStringFromClass([self class])
+                                           code:0
+                                       userInfo:userInfo];
+    return result;
+}
+
+- (NSError *)fileNameCouldNotBeEmptyError {
+    NSString * errorDescription = @"Could not process empty file name";
+    NSDictionary * userInfo = @{NSLocalizedDescriptionKey: errorDescription};
+    NSError * result = [NSError errorWithDomain:NSStringFromClass([self class])
+                                           code:1
+                                       userInfo:userInfo];
+    return result;
+}
+
+- (NSError *)fileNameCouldNotBeDirectoryError {
+    NSString * errorDescription = @"Could not process file name that represents directory";
+    NSDictionary * userInfo = @{NSLocalizedDescriptionKey: errorDescription};
+    NSError * result = [NSError errorWithDomain:NSStringFromClass([self class])
+                                           code:1
+                                       userInfo:userInfo];
+    return result;
+}
+
+- (NSError *)directoryUnacceptableURLErrorUsingURL:(NSURL *)URL {
+    NSString * errorDescription = [NSString stringWithFormat:@"Could not handle nil or empty URL: %@", URL];
+    NSDictionary * userInfo = @{NSLocalizedDescriptionKey: errorDescription};
+    NSError * result = [NSError errorWithDomain:NSStringFromClass([self class])
+                                           code:2
+                                       userInfo:userInfo];
+    return result;
+}
+
+#pragma mark Setter
+
+- (void)setLocalDocumentsURL:(NSURL *)localDocumentsURL {
+    if ([_localDocumentsURL.path isEqualToString:localDocumentsURL.path]) {
+        return;
+    }
+    
+    [self synchronousEnsureThatDirectoryPresentsAtURL:localDocumentsURL
+                                            comletion:^(NSError *error) {
+        if (error != nil) {
+            NSLog(@"[CDBCloudDocuments] could not resolve local documents URL %@\
+                  \n failed with error: %@",
+                  localDocumentsURL, error);
+        } else {
+            _localDocumentsURL = localDocumentsURL;
+        }
+    }];
+}
+
+#pragma mark Lazy loading
+
+- (NSURL *)localDocumentsURL {
+    if (_localDocumentsURL == nil) {
+        NSArray * URLs = [self.fileManager URLsForDirectory:NSDocumentDirectory
+                                                  inDomains:NSUserDomainMask];
+        _localDocumentsURL = [URLs lastObject];
+    }
+    return _localDocumentsURL;
+}
+
+- (NSMetadataQuery *)metadataQuery {
+    if (_metadataQuery == nil) {
+        _metadataQuery = [NSMetadataQuery new];
+    }
+    return _metadataQuery;
+}
+
+#pragma mark - life cycle -
 
 - (void)initiateUsingCloudPathComponent:(NSString * _Nullable)pathComponent {
     if (pathComponent.length == 0) {
@@ -68,13 +180,7 @@
 #pragma mark CDBDocumentDelegate
 
 - (void)didAutoresolveConflictInCDBDocument:(CDBDocument *)document {
-    __weak typeof(self) wself = self;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if ([wself.delegate respondsToSelector:@selector(CDBContainer: didAutoresolveConflictInCDBDocument:)]) {
-            [wself.delegate CDBContainer:wself
-     didAutoresolveConflictInCDBDocument:document];
-        }
-    });
+    [self notifyDelegateThatDocumentsDidAutoresolveConflictInCDBDocument:document];
 }
 
 - (void)CDBDocumentDirectory:(CDBDocument *)document
@@ -87,31 +193,48 @@
     
     BOOL removed = [self.fileManager fileExistsAtPath:URL.path] == NO;
     if (removed) {
-        if ([self.delegate respondsToSelector:@selector(CDBContainer:didRemoveDocumentAtURL:)]) {
-            [self.delegate CDBContainer:wself
-                 didRemoveDocumentAtURL:URL];
-        }
+        [self notifyDelegateThatDocumentsDidRemoveUbiquitosDocumentAtURL:URL];
+     
         return;
     }
     
-    if ([self.delegate respondsToSelector:@selector(CDBContainer:didChangeDocumentAtURL:)]) {
-        [self.delegate CDBContainer:wself
-             didChangeDocumentAtURL:URL];
-    }
+    [self notifyDelegateThatDocumentsDidChangeUbiquitosDocumentAtURL:URL];
 }
 
 #pragma mark - Public -
 
+#pragma mark Handle state changes
 
-//- (void)requestCloudAccess:(CDBiCloudAccessBlock)block {
-//    __weak typeof (self) wself = self;
-//    [self initiateSynchronizationWithCompletion:^(NSError * _Nullable error) {
-//        if (block == nil) {
-//            return;
-//        }
-//        block(wself.iCloudDocumentsDownloaded, wself.state, error);
-//    }];
-//}
+- (void)updateForUbiquityActive:(BOOL)active
+      usingUbiquityContainerURL:(NSURL *)containerURL {
+    
+    BOOL shouldPostChangeNotificaton = [containerURL isEqual:self.ubiquityContainerURL] == NO
+                                       && containerURL != nil;
+    
+    self.ubiquityContainerURL = containerURL;
+
+    if (active
+        && self.ubiquitosActive == NO) {
+        [self ensureThatUbiquitousDocumentsDirectoryPresents];
+        [self startSynchronizationWithCompletion:nil];
+        self.ubiquitosActive = YES;
+        shouldPostChangeNotificaton = YES;
+    } else if (active == NO
+               && self.ubiquitosActive == YES) {
+        [self dissmissSynchronization];
+        self.ubiquitosActive = NO;
+        shouldPostChangeNotificaton = YES;
+    }
+    
+    
+    if (shouldPostChangeNotificaton) {
+        DLogCDB(@"update for ubiquity available %@\
+              \r with container %@",
+              NSStringFromBool(active),
+              self.ubiquityContainerURL);
+        [self notifyDelegateThatDocumentsDidChangeState];
+    }
+}
 
 - (void)addDelegate:(id<CDBCloudDocumentsDelegate> _Nonnull)delegate {
     self.delegate = delegate;
@@ -154,7 +277,7 @@
 }
 
 - (CDBDocument *)localDocumentWithFileName:(NSString *)fileName
-                                           error:(NSError *_Nullable __autoreleasing * _Nullable)error {
+                                     error:(NSError *_Nullable __autoreleasing * _Nullable)error {
     if (fileName.length == 0) {
         *error = [self fileNameCouldNotBeEmptyError];
         return nil;
@@ -174,8 +297,8 @@
         return nil;
     }
     
-    if (self.iCloudOperable == NO) {
-        *error = [self iCloudNotAcceessableErrorUsingState:self.state];
+    if (self.ubiquityContainerAccessible == NO) {
+        *error = [self iCloudNotAcceessableError];
         return nil;
     }
     
@@ -228,8 +351,9 @@
 
 - (void)deleteDocument:(CDBDocument * _Nonnull)document
             completion:(CDBErrorCompletion _Nonnull)completion {
-    if (document.isUbiquitous && self.iCloudOperable == NO) {
-        completion([self iCloudNotAcceessableErrorUsingState:self.state]);
+    if (document.isUbiquitous
+        && self.ubiquityContainerAccessible == NO) {
+        completion([self iCloudNotAcceessableError]);
         return;
     }
     
@@ -252,6 +376,78 @@
     }];
 }
 
+- (void)copyDocument:(CDBDocument * _Nonnull)document
+               toURL:(NSURL * _Nonnull)destinationURL
+             replace:(BOOL)replace
+          completion:(CDBErrorCompletion _Nonnull)completion {
+    
+    if (destinationURL.path.length == 0) {
+        completion([self fileNameCouldNotBeEmptyError]);
+        return;
+    }
+    
+    if (document.isUbiquitous
+        && self.ubiquityContainerAccessible == NO) {
+        completion([self iCloudNotAcceessableError]);
+        return;
+    }
+    
+    void (^ handler)(BOOL success) = ^(BOOL success) {
+        if (success == NO) {
+            completion(document.iCloudDocumentNotOperableError);
+            return;
+        }
+        [self copyClosedDocument:document
+                           toURL:destinationURL
+                         replace:replace
+                      completion:completion];
+    };
+    
+    if (document.isClosed) {
+        handler(YES);
+        return;
+    }
+    
+    [document closeWithCompletionHandler:^(BOOL success) {
+        handler(success);
+    }];
+}
+
+- (void)moveDocument:(CDBDocument * _Nonnull)document
+               toURL:(NSURL * _Nonnull)destinationURL
+          completion:(CDBErrorCompletion _Nonnull)completion {
+    
+    if (destinationURL.path.length == 0) {
+        completion([self fileNameCouldNotBeEmptyError]);
+        return;
+    }
+    
+    if (document.isUbiquitous
+        && self.ubiquityContainerAccessible == NO) {
+        completion([self iCloudNotAcceessableError]);
+        return;
+    }
+    
+    void (^ handler)(BOOL success) = ^(BOOL success) {
+        if (success == NO) {
+            completion(document.iCloudDocumentNotOperableError);
+            return;
+        }
+        [self moveClosedDocument:document
+                           toURL:destinationURL
+                      completion:completion];
+    };
+    
+    if (document.isClosed) {
+        handler(YES);
+        return;
+    }
+    
+    [document closeWithCompletionHandler:^(BOOL success) {
+        handler(success);
+    }];
+}
+
 #pragma mark - Private -
 
 #pragma mark Safe working with files
@@ -259,26 +455,24 @@
 - (void)deleteClosedDocument:(CDBDocument * _Nonnull)document
                   completion:(CDBErrorCompletion _Nonnull)completion {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
-        __block NSError * error = nil;
+        __block NSError * deletetionError = nil;
         
         void (^accessor)(NSURL *) = ^(NSURL * newURL1) {
             [self.fileManager removeItemAtURL:newURL1
-                                        error:&error];
-            if (error == nil) {
-                [document presentedItemDidMoveToURL:[NSURL new]];
-            }
+                                        error:&deletetionError];
         };
 
         // we need this error because coordinator makes variable nil and we lose result of a file operation
-    
+        NSError * coordinationError = nil;
         NSFileCoordinator * fileCoordinator = [[NSFileCoordinator alloc] initWithFilePresenter:document];
         [fileCoordinator coordinateWritingItemAtURL:document.fileURL
                                             options:NSFileCoordinatorWritingForDeleting
-                                              error:&error
+                                              error:&coordinationError
                                          byAccessor:accessor];
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            completion(error);
+            completion(coordinationError != nil ? coordinationError
+                                         : deletetionError);
         });
     });
 }
@@ -286,9 +480,16 @@
 - (void)makeClosedDocument:(CDBDocument * _Nonnull)document
                 ubiquitous:(BOOL)ubiquitous
                 completion:(CDBErrorCompletion _Nonnull)completion {
-    if (self.iCloudOperable == NO) {
+    
+    if (document.isUbiquitous == ubiquitous) {
         if (completion != nil) {
-            completion([self iCloudNotAcceessableErrorUsingState:self.state]);
+            completion(nil);
+        }
+    }
+    
+    if (self.ubiquityContainerAccessible == NO) {
+        if (completion != nil) {
+            completion([self iCloudNotAcceessableError]);
         }
         return;
     }
@@ -298,15 +499,18 @@
     NSURL * destinationURL = ubiquitous ? ubiquitosURL
                                         : localURL;
     
+    if ([document.fileURL isEqual:destinationURL]) {
+        if (completion != nil) {
+            completion(nil);
+        }
+    }
+    
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
         NSError * error = nil;
         [self.fileManager setUbiquitous:ubiquitous
                               itemAtURL:document.fileURL
                          destinationURL:destinationURL
                                   error:&error];
-        if (error == nil) {
-//            [document presentedItemDidMoveToURL:destinationURL];
-        }
     
         dispatch_async(dispatch_get_main_queue(), ^{
             if (completion != nil) {
@@ -316,8 +520,67 @@
     });
 }
 
+- (void)moveClosedDocument:(CDBDocument *)document
+                     toURL:(NSURL *)destinationURL
+                completion:(CDBErrorCompletion)completion {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
+        
+        __block NSError * copyingError = nil;
+        void (^accessor)(NSURL*, NSURL*) = ^(NSURL *newURL1, NSURL *newURL2) {
+            [self.fileManager moveItemAtURL:newURL1
+                                      toURL:newURL2
+                                      error:&copyingError];
+        };
+        
+        NSError * coordinationError = nil;
+        NSFileCoordinator * coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:document];
+        [coordinator coordinateWritingItemAtURL:document.fileURL
+                                        options:NSFileCoordinatorWritingForMoving
+                               writingItemAtURL:destinationURL
+                                        options:NSFileCoordinatorWritingForReplacing
+                                          error:&coordinationError
+                                     byAccessor:accessor];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            completion(coordinationError != nil ? coordinationError
+                       : copyingError);
+        });
+    });
+}
+
+- (void)copyClosedDocument:(CDBDocument *)document
+                     toURL:(NSURL *)destinationURL
+                   replace:(BOOL)replace
+                completion:(CDBErrorCompletion)completion {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
+        __block NSError * copyingError = nil;
+        void (^accessor)(NSURL*, NSURL*) = ^(NSURL *newURL1, NSURL *newURL2) {
+            if (replace) {
+                [self.fileManager removeItemAtPath:newURL2
+                                             error:nil];
+            }
+            [self.fileManager copyItemAtURL:newURL1
+                                      toURL:newURL2
+                                      error:&copyingError];
+        };
+        
+        NSError * coordinationError = nil;
+        NSFileCoordinator * coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:document];
+        [coordinator coordinateReadingItemAtURL:document.fileURL
+                                        options:NSFileCoordinatorReadingWithoutChanges
+                               writingItemAtURL:destinationURL
+                                        options:NSFileCoordinatorWritingForReplacing
+                                          error:&coordinationError
+                                     byAccessor:accessor];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            completion(coordinationError != nil ? coordinationError
+                                                : copyingError);
+        });
+    });
+}
+
+
 - (CDBDocument *)documentWithAvailableFileURL:(NSURL *)fileURL
-                                              error:(NSError *__autoreleasing *)error {
+                                        error:(NSError *__autoreleasing *)error {
     BOOL directory = NO;
     BOOL exist = [self.fileManager fileExistsAtPath:fileURL.path
                                         isDirectory:&directory];
@@ -351,7 +614,7 @@
 
 - (void)startSynchronizationWithCompletion:(CDBErrorCompletion)completion {
     if (self.documentsDirectoryWatchdog == nil) {
-        self.documentsDirectoryWatchdog = [CDBDocument documentWithFileURL:self.ubiquityDocumentsDirectoryURL
+        self.documentsDirectoryWatchdog = [CDBDocument documentWithFileURL:self.ubiquityDocumentsURL
                                                                   delegate:self];
         [NSFileCoordinator addFilePresenter:self.documentsDirectoryWatchdog];
     }
@@ -401,9 +664,7 @@
             if (completion != nil) {
                 completion();
             }
-            if ([wself.delegate respondsToSelector:@selector(iCloudDocumentsDidChangeForCDBContainer:)]) {
-                [wself.delegate iCloudDocumentsDidChangeForCDBContainer:wself];
-            }
+            [wself notifyDelegateThatUbiquitosDocumentsDidChange];
         });
     });
 }
@@ -429,69 +690,20 @@
     }
 }
 
-#pragma mark Handle state changes
-
-- (void)updateForConnectionState:(CDBCloudState)state {
-    
-    NSLog(@"[CDBCloudDocuments] update for state %@",
-          StringFromCloudState(state));
-    
-    self.state = state;
-    
-    switch (state) {
-        
-        case CDBCloudAccessDenied: {
-            [self dissmissSynchronization];
-            [self showDeniedAccessAlert];
-        }
-    
-        case CDBCloudAccessGranted:
-        case CDBCloudStateUndefined: {
-            [self dissmissSynchronization];
-        } break;
-        
-        case CDBCloudUbiquitosConеtentAvailable: {
-            [self ensureThatUbiquitousDocumentsDirectoryPresents];
-            [self startSynchronizationWithCompletion:nil];
-        } break;
-            
-        default:
-            break;
-    }
-    
-    __weak typeof (self) wself = self;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if ([wself.delegate respondsToSelector:@selector(CDBContainer:iCloudStatedidChangeTo:)]) {
-            [wself.delegate CDBContainer:wself iCloudStatedidChangeTo:state];
-        }
-    });
-}
-
-#pragma mark Show Unavailable Alert
-
-- (void)showDeniedAccessAlert {
-    UIAlertView * alert = [[UIAlertView alloc] initWithTitle:LSCDB(iCloud Unavailable)
-                                                     message:LSCDB(Make sure that you are signed into a valid iCloud account and documents are Enabled)
-                                                    delegate:nil
-                                           cancelButtonTitle:LSCDB(OK)
-                                           otherButtonTitles:nil];
-    [alert show];
-}
-
 #pragma mark Directory checking
 
 - (void)ensureThatUbiquitousDocumentsDirectoryPresents {
-    [self synchronousEnsureThatDirectoryPresentsAtURL:self.ubiquityDocumentsDirectoryURL
+    [self synchronousEnsureThatDirectoryPresentsAtURL:self.ubiquityDocumentsURL
                                             comletion:^(NSError *error) {
         if (error == nil) {
             return;
         }
         NSLog(@"[CDBCloudDocuments] could not resolve ubiquituos documents directory URL %@\
               \n failed with error: %@",
-              self.ubiquityDocumentsDirectoryURL, error);
+              self.ubiquityDocumentsURL, error);
         NSLog(@"[CDBCloudDocuments] ubiquituos documents directory resolved to default path");
         self.cloudPathComponent = CDBiCloudDocumentsDirectoryPathComponent;
-        [self synchronousEnsureThatDirectoryPresentsAtURL:self.ubiquityDocumentsDirectoryURL
+        [self synchronousEnsureThatDirectoryPresentsAtURL:self.ubiquityDocumentsURL
                                                 comletion:^(NSError *error) {
             if (error == nil) {
                 return;
@@ -499,7 +711,7 @@
             NSLog(@"[CDBCloudDocuments] unpredicable error \
                   \ncould not resolve default ubiquituos documents directory URL %@\
                   \n failed with error: %@",
-                  self.ubiquityDocumentsDirectoryURL, error);
+                  self.ubiquityDocumentsURL, error);
         }];
     }];
 }
@@ -560,8 +772,8 @@
 
 - (NSURL *)ubiquityDocumentFileURLUsingFileName:(NSString *)fileName {
     
-    NSURL * result = [self.ubiquityDocumentsDirectoryURL URLByAppendingPathComponent:fileName
-                                                                         isDirectory:NO];
+    NSURL * result = [self.ubiquityDocumentsURL URLByAppendingPathComponent:fileName
+                                                                isDirectory:NO];
     return result;
 }
 
@@ -569,6 +781,53 @@
     NSURL * result = [self.localDocumentsURL URLByAppendingPathComponent:fileName
                                                              isDirectory:NO];
     return result;
+}
+
+#pragma mark notify delegate 
+
+- (void)notifyDelegateThatDocumentsDidChangeState {
+    __weak typeof (self) wself = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if ([wself.delegate respondsToSelector:@selector(didChangeCloudStateOfCDBCloudDocuments:)]) {
+            [wself.delegate didChangeCloudStateOfCDBCloudDocuments:wself];
+        }
+    });
+}
+
+- (void)notifyDelegateThatUbiquitosDocumentsDidChange {
+    if ([self.delegate respondsToSelector:@selector(ubiquitosDocumentsDidChangeInCDBCloudDocuments:)]) {
+        [self.delegate ubiquitosDocumentsDidChangeInCDBCloudDocuments:self];
+    }
+}
+
+- (void)notifyDelegateThatDocumentsDidAutoresolveConflictInCDBDocument:(CDBDocument * _Nonnull)document {
+    __weak typeof(self) wself = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if ([wself.delegate respondsToSelector:@selector(CDBCloudDocuments: didAutoresolveConflictInCDBDocument:)]) {
+            [wself.delegate CDBCloudDocuments:wself
+          didAutoresolveConflictInCDBDocument:document];
+        }
+    });
+}
+
+- (void)notifyDelegateThatDocumentsDidChangeUbiquitosDocumentAtURL:(NSURL * _Nullable)URL {
+    __weak typeof (self) wself = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if ([wself.delegate respondsToSelector:@selector(CDBCloudDocuments: didChangeUbiquitosDocumentAtURL:)]) {
+            [wself.delegate CDBCloudDocuments:wself
+             didChangeUbiquitosDocumentAtURL:URL];
+        }
+    });
+}
+
+- (void)notifyDelegateThatDocumentsDidRemoveUbiquitosDocumentAtURL:(NSURL * _Nullable)URL {
+    __weak typeof (self) wself = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if ([wself.delegate respondsToSelector:@selector(CDBCloudDocuments: didRemoveUbiquitosDocumentAtURL:)]) {
+            [wself.delegate CDBCloudDocuments:wself
+             didRemoveUbiquitosDocumentAtURL:URL];
+        }
+    });
 }
 
 #pragma mark Logging
@@ -619,119 +878,6 @@
             isUploading,
             percentDownloaded,
             percentUploaded);
-}
-
-
-#pragma mark - Property -
-
-#pragma mark Getter
-
-- (NSURL *)ubiquityDocumentsURL {
-    NSURL * result = self.ubiquityDocumentsDirectoryURL;
-    return result;
-}
-
-- (NSURL *)ubiquityDocumentsDirectoryURL {
-    NSURL * result =
-        [self.ubiquityContainer URLByAppendingPathComponent:self.cloudPathComponent
-                                                isDirectory:YES];
-    return result;
-}
-
-- (BOOL)isiCloudDocumentsDownloaded {
-//    BOOL result = self.state == CDBContaineriCloudDownloaded
-//                  || self.state == CDBContaineriCloudCurrent;
-    return NO;
-}
-
-- (BOOL)isiCloudOperable {
-    BOOL result = (self.state == CDBCloudUbiquitosConеtentAvailable);
-    return result;
-}
-
-- (NSFileManager *)fileManager {
-    NSFileManager * result = [NSFileManager new];
-    return result;
-}
-
-- (NSPredicate *)requestedFilesMetadataPredicate {
-    NSString * format = [NSString stringWithFormat:@"%%K.pathExtension LIKE '%@'", self.requestedFilesExtension];
-    NSPredicate * result = [NSPredicate predicateWithFormat:format, NSMetadataItemFSNameKey];
-    return result;
-}
-
-- (NSError *)iCloudNotAcceessableErrorUsingState:(CDBCloudState)state {
-    NSString * errorDescription = [NSString stringWithFormat:@"iCloud not acceessable with current state: %@",
-                                   StringFromCloudState(state)];
-    NSDictionary * userInfo = @{NSLocalizedDescriptionKey: errorDescription};
-    NSError * result = [NSError errorWithDomain:NSStringFromClass([self class])
-                                           code:0
-                                       userInfo:userInfo];
-    return result;
-}
-
-- (NSError *)fileNameCouldNotBeEmptyError {
-    NSString * errorDescription = @"Could not process empty file name";
-    NSDictionary * userInfo = @{NSLocalizedDescriptionKey: errorDescription};
-    NSError * result = [NSError errorWithDomain:NSStringFromClass([self class])
-                                           code:1
-                                       userInfo:userInfo];
-    return result;
-}
-
-- (NSError *)fileNameCouldNotBeDirectoryError {
-    NSString * errorDescription = @"Could not process file name that represents directory";
-    NSDictionary * userInfo = @{NSLocalizedDescriptionKey: errorDescription};
-    NSError * result = [NSError errorWithDomain:NSStringFromClass([self class])
-                                           code:1
-                                       userInfo:userInfo];
-    return result;
-}
-
-- (NSError *)directoryUnacceptableURLErrorUsingURL:(NSURL *)URL {
-    NSString * errorDescription = [NSString stringWithFormat:@"Could not handle nil or empty URL: %@", URL];
-    NSDictionary * userInfo = @{NSLocalizedDescriptionKey: errorDescription};
-    NSError * result = [NSError errorWithDomain:NSStringFromClass([self class])
-                                           code:2
-                                       userInfo:userInfo];
-    return result;
-}
-
-#pragma mark Setter
-
-- (void)setLocalDocumentsURL:(NSURL *)localDocumentsURL {
-    if ([_localDocumentsURL.path isEqualToString:localDocumentsURL.path]) {
-        return;
-    }
-    
-    [self synchronousEnsureThatDirectoryPresentsAtURL:localDocumentsURL
-                                            comletion:^(NSError *error) {
-         if (error != nil) {
-             NSLog(@"[CDBCloudDocuments] could not resolve local documents URL %@\
-                    \n failed with error: %@",
-                    localDocumentsURL, error);
-         } else {
-             _localDocumentsURL = localDocumentsURL;
-         }
-    }];
-}
-
-#pragma mark Lazy loading
-
-- (NSURL *)localDocumentsURL {
-    if (_localDocumentsURL == nil) {
-        NSArray * URLs = [self.fileManager URLsForDirectory:NSDocumentDirectory
-                                                  inDomains:NSUserDomainMask];
-        _localDocumentsURL = [URLs lastObject];
-    }
-    return _localDocumentsURL;
-}
-
-- (NSMetadataQuery *)metadataQuery {
-    if (_metadataQuery == nil) {
-        _metadataQuery = [NSMetadataQuery new];
-    }
-    return _metadataQuery;
 }
 
 @end

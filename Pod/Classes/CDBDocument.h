@@ -58,13 +58,6 @@
 + (instancetype _Nullable)documentWithFileURL:(NSURL * _Nonnull)url
                                      delegate:(id<CDBDocumentDelegate> _Nullable)delegate;
 
-/**
- Rename document file to fileName
- Fails if file with fileName already exist
-**/
-- (void)renameFileUsingFileName:(NSString * _Nonnull)fileName
-                     completion:(CDBErrorCompletion _Nonnull)completion;
-
 - (NSError * _Nonnull)iCloudDocumentNotOperableError;
 
 @end

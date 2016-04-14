@@ -27,15 +27,10 @@ CDBDocumentDelegate
 **/
 
 @property (assign, nonatomic) BOOL verbose;
+@property (assign, nonatomic, readonly) BOOL ubiquitosActive;
 
-/**
- This is the URL where local documents container points (where local files stored)
- By default it points to local Documents directory
- App makes attempt to create this path if it doesn't exist
- You could change it at any time you want
-**/
 
-@property (copy, nonatomic, nullable) NSURL * localDocumentsURL;
+@property (copy, nonatomic, readonly, nullable) NSURL * currentDocumentsURL;
 
 /**
  This is the URL where cloud documents container points (where cloud files stored)
@@ -45,7 +40,14 @@ CDBDocumentDelegate
 
 @property (copy, nonatomic, readonly, nullable) NSURL * ubiquityDocumentsURL;
 
+/**
+ This is the URL where local documents container points (where local files stored)
+ By default it points to local Documents directory
+ App makes attempt to create this path if it doesn't exist
+ You could change it at any time you want
+**/
 
+@property (copy, nonatomic, nullable) NSURL * localDocumentsURL;
 
 /**
  Contains all documents that present in container
@@ -63,7 +65,8 @@ CDBDocumentDelegate
  This is for cloudConnection only
  **/
 
-- (void)updateForConnectionState:(CDBCloudState)state;
+- (void)updateForUbiquityActive:(BOOL)active
+      usingUbiquityContainerURL:(NSURL * _Nullable)containerURL;
 
 /**
  Add delegate to notify changes
@@ -123,6 +126,15 @@ CDBDocumentDelegate
 
 - (void)deleteDocument:(CDBDocument * _Nonnull)document
             completion:(CDBErrorCompletion _Nonnull)completion;
+
+- (void)copyDocument:(CDBDocument * _Nonnull)document
+               toURL:(NSURL * _Nonnull)destinationURL
+             replace:(BOOL)replace
+          completion:(CDBErrorCompletion _Nonnull)completion;
+
+- (void)moveDocument:(CDBDocument * _Nonnull)document
+               toURL:(NSURL * _Nonnull)destinationURL
+          completion:(CDBErrorCompletion _Nonnull)completion;
 @end
 
 
@@ -130,18 +142,17 @@ CDBDocumentDelegate
 
 @optional
 
-- (void)CDBContainer:(CDBCloudDocuments * _Nonnull)documents
-    iCloudStatedidChangeTo:(CDBCloudState)state;
+- (void)didChangeCloudStateOfCDBCloudDocuments:(CDBCloudDocuments * _Nonnull)documents;
 
-- (void)iCloudDocumentsDidChangeForCDBContainer:(CDBCloudDocuments * _Nonnull)documents;
+- (void)ubiquitosDocumentsDidChangeInCDBCloudDocuments:(CDBCloudDocuments * _Nonnull)documents;
 
-- (void)CDBContainer:(CDBCloudDocuments * _Nonnull)documents
+- (void)CDBCloudDocuments:(CDBCloudDocuments * _Nonnull)documents
     didAutoresolveConflictInCDBDocument:(CDBDocument * _Nonnull)document;
 
-- (void)CDBContainer:(CDBCloudDocuments * _Nonnull)documents
-    didChangeDocumentAtURL:(NSURL * _Nullable)URL;
+- (void)CDBCloudDocuments:(CDBCloudDocuments * _Nonnull)documents
+    didChangeUbiquitosDocumentAtURL:(NSURL * _Nullable)URL;
     
-- (void)CDBContainer:(CDBCloudDocuments * _Nonnull)documents
-    didRemoveDocumentAtURL:(NSURL * _Nullable)URL;
+- (void)CDBCloudDocuments:(CDBCloudDocuments * _Nonnull)documents
+    didRemoveUbiquitosDocumentAtURL:(NSURL * _Nullable)URL;
 
 @end

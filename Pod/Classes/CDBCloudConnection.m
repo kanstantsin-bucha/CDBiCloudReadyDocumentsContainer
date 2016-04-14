@@ -6,6 +6,9 @@
 NSString * _Nonnull CDBCloudConnectionDidChangeState = @"CDBCloudConnectionDidChangeState";
 
 
+#define CDB_Store_Ubiqutos_Token @".CDB.CDBCloudStore.store.ubiquitos.token=NSObject"
+
+
 @interface CDBCloudConnection ()
 
 @property (assign, nonatomic, readwrite) CDBCloudState state;
@@ -13,16 +16,17 @@ NSString * _Nonnull CDBCloudConnectionDidChangeState = @"CDBCloudConnectionDidCh
 @property (strong, nonatomic, readwrite) CDBCloudDocuments * documents;
 @property (strong, nonatomic, readwrite) CDBCloudStore * store;
 
+
 @property (copy, nonatomic) NSString * containerID;
 @property (copy, nonatomic) NSString * documentsPathComponent;
 @property (copy, nonatomic) NSString * storeName;
-@property (strong, nonatomic) NSString * storeModelURL;
-
+@property (strong, nonatomic) NSURL * storeModelURL;
 
 
 @property (strong, nonatomic, readonly) NSFileManager * fileManager;
 @property (nonatomic, strong) NSURL * ubiquityContainerURL;
-@property (strong, nonatomic) id ubiquityIdentityToken;
+@property (strong, nonatomic) id<NSObject,NSCopying,NSCoding> ubiquityIdentityToken;
+@property (assign, nonatomic) BOOL usingSameUbiquityContainer;
 
 @end
 
@@ -36,22 +40,50 @@ NSString * _Nonnull CDBCloudConnectionDidChangeState = @"CDBCloudConnectionDidCh
     return result;
 }
 
+- (BOOL)isInitiated {
+    BOOL result = self.containerID.length > 0;
+    return result;
+}
+
+- (BOOL)ubiquitosActive {
+    BOOL result = self.ubiquitosDesired
+                  && self.state == CDBCloudUbiquitosContentAvailable;
+    return result;
+}
+
+- (void)setUbiquitosDesired:(BOOL)ubiquitosDesired {
+    if (_ubiquitosDesired == ubiquitosDesired) {
+        return;
+    }
+    
+    _ubiquitosDesired = ubiquitosDesired;
+    [self handleStateChanges];
+}
+
 #pragma mark - lazy loading - 
 
 - (CDBCloudDocuments *)documents {
-    if (_documents == nil) {
+    if (_documents == nil
+        && self.isInitiated) {
         _documents = [CDBCloudDocuments new];
         [_documents initiateUsingCloudPathComponent:self.documentsPathComponent];
-        [_documents updateForConnectionState:self.state];
+        [_documents updateForUbiquityActive:self.ubiquitosActive
+                  usingUbiquityContainerURL:self.ubiquityContainerURL];
     }
     return _documents;
 }
 
 - (CDBCloudStore *)store {
-    if (_store == nil) {
+    if (_store == nil
+        && self.isInitiated
+        && self.storeName.length > 0
+        && self.storeModelURL.path.length > 0) {
         _store = [CDBCloudStore new];
-        [_store initiateWithStoreName:self.storeName
-                        storeModelURL:self.storeModelURL];
+        [_store initiateWithName:self.storeName
+                        modelURL:self.storeModelURL];
+        [_store updateForUbiquityActive:self.ubiquitosActive
+             usingSameUbiquityContainer:self.usingSameUbiquityContainer
+                                withURL:self.ubiquityContainerURL];
     }
     return _store;
 }
@@ -94,10 +126,12 @@ NSString * _Nonnull CDBCloudConnectionDidChangeState = @"CDBCloudConnectionDidCh
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-- (void)initiateUsingContainerIdentifier:(NSString * _Nullable)ID
-                  documentsPathComponent:(NSString * _Nullable)pathComponent
-                               storeName:(NSString * _Nullable)storeName
-                           storeModelURL:(NSURL * _Nullable)storeModelURL {
+- (void)initiateWithUbiquityDesired:(BOOL)desired
+           usingContainerIdentifier:(NSString * _Nullable)ID
+             documentsPathComponent:(NSString * _Nullable)pathComponent
+                          storeName:(NSString * _Nullable)storeName
+                      storeModelURL:(NSURL * _Nullable)storeModelURL {
+    self.ubiquitosDesired = desired;
     self.containerID = ID;
     self.documentsPathComponent = pathComponent;
     self.storeName = storeName;
@@ -105,16 +139,30 @@ NSString * _Nonnull CDBCloudConnectionDidChangeState = @"CDBCloudConnectionDidCh
     
     [self subscribeToNotifications];
     [self performCloudStateCheckWithCompletion:^{
-        [self postNotificationUsingName:CDBCloudConnectionDidChangeState];
+        [self handleStateChanges];
     }];
 }
 
+#pragma mark - private -
+
 #pragma mark handle state changes
+
+- (void)handleStateChanges {
+    if (self.state == CDBCloudAccessDenied) {
+        [self showDeniedAccessAlert];
+    }
+    
+    [_documents updateForUbiquityActive:self.ubiquitosActive
+                 usingUbiquityContainerURL:self.ubiquityContainerURL];
+    [_store updateForUbiquityActive:self.ubiquitosActive
+         usingSameUbiquityContainer:self.usingSameUbiquityContainer
+                            withURL:self.ubiquityContainerURL];
+    [self postNotificationUsingName:CDBCloudConnectionDidChangeState];
+}
 
 - (void)cloudContentAvailabilityChanged:(NSNotification *)notification {
     [self performCloudStateCheckWithCompletion:^{
-        [_documents updateForConnectionState:self.state];
-        [self postNotificationUsingName:CDBCloudConnectionDidChangeState];
+        [self handleStateChanges];
     }];
 }
 
@@ -134,18 +182,56 @@ NSString * _Nonnull CDBCloudConnectionDidChangeState = @"CDBCloudConnectionDidCh
             if (ubiquityContainerIsAvailable == NO) {
                 currentState = CDBCloudAccessGranted;
             } else {
-                currentState = CDBCloudUbiquitosConеtentAvailable;
+                currentState = CDBCloudUbiquitosContentAvailable;
             }
             
             if (cloudIsAvailable == NO) {
                 currentState = CDBCloudAccessDenied;
+            } else {
+                id previousUbiquityIdentityToken = [self loadPreviousUbiquityIdentityToken];
+                self.usingSameUbiquityContainer = [ubiquityIdentityToken isEqual:previousUbiquityIdentityToken];
+                [self saveUbiquityIdentityToken:ubiquityIdentityToken];
             }
             
             self.ubiquityContainerURL = ubiquityContainerURL;
             self.ubiquityIdentityToken = ubiquityIdentityToken;
             self.state = currentState;
+            
+            if (completion != nil) {
+                completion();
+            }
         });
     });
+}
+
+#pragma mark Show Unavailable Alert
+
+- (void)showDeniedAccessAlert {
+    UIAlertView * alert = [[UIAlertView alloc] initWithTitle:LSCDB(iCloud Unavailable)
+                                                     message:LSCDB(Make sure that you are signed into a valid iCloud account and documents are Enabled)
+                                                    delegate:nil
+                                           cancelButtonTitle:LSCDB(OK)
+                                           otherButtonTitles:nil];
+    [alert show];
+}
+
+#pragma mark CDB.CDBCloudStore.store.ubiquitos.token=NSObject
+
+- (void)saveUbiquityIdentityToken:(id<NSObject, NSCoding, NSCopying>)token {
+    if (token == nil) {
+        return;
+    }
+    
+    [[NSUserDefaults standardUserDefaults] setObject:token
+                                              forKey:CDB_Store_Ubiqutos_Token];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+}
+
+- (id<NSObject, NSCoding, NSCopying>)loadPreviousUbiquityIdentityToken {
+    
+    id<NSObject, NSCoding, NSCopying> result =
+        [[NSUserDefaults standardUserDefaults] objectForKey:CDB_Store_Ubiqutos_Token];
+    return result;
 }
 
 @end

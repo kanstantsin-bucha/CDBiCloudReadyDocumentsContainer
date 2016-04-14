@@ -31,12 +31,17 @@ extern NSString * _Nonnull CDBCloudConnectionDidChangeState;
 @property (strong, nonatomic, readonly, nullable) CDBCloudDocuments * documents;
 @property (strong, nonatomic, readonly, nullable) CDBCloudStore * store;
 
+@property (assign, nonatomic, readonly) BOOL ubiquitosActive;
+
+@property (assign, nonatomic) BOOL ubiquitosDesired;
+
 + (instancetype _Nullable)sharedInstance;
 
-- (void)initiateUsingContainerIdentifier:(NSString * _Nullable)ID
-                  documentsPathComponent:(NSString * _Nullable)pathComponent
-                               storeName:(NSString * _Nullable)storeName
-                           storeModelURL:(NSURL * _Nullable)storeModelURL;
+- (void)initiateWithUbiquityDesired:(BOOL)desired
+           usingContainerIdentifier:(NSString * _Nullable)ID
+             documentsPathComponent:(NSString * _Nullable)pathComponent
+                          storeName:(NSString * _Nullable)storeName
+                      storeModelURL:(NSURL * _Nullable)storeModelURL;
              
 
 @end

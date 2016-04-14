@@ -111,38 +111,6 @@
     });
 }
 
-#pragma mark - Public -
-
-- (void)renameFileUsingFileName:(NSString *)fileName
-                     completion:(CDBErrorCompletion)completion {
-    if (fileName.length == 0) {
-        completion([[self class] fileNameCouldNotBeEmptyError]);
-        return;
-    }
-    
-    void (^ handler)(BOOL success) = ^(BOOL success) {
-        if (success == NO) {
-            completion([self iCloudDocumentNotOperableError]);
-            return;
-        }
-        
-        NSURL * containingDirectory = [self.fileURL URLByDeletingLastPathComponent];
-        NSURL * destinationFileURL = [containingDirectory URLByAppendingPathComponent:fileName
-                                                                          isDirectory:NO];
-        [self moveClosedFileToURL:destinationFileURL
-                       completion:completion];
-    };
-    
-    if (self.isClosed) {
-        handler(YES);
-        return;
-    }
-    
-    [self closeWithCompletionHandler:^(BOOL success) {
-        handler(success);
-    }];
-}
-
 #pragma mark - Protected -
 
 #pragma mark Loading and Saving
@@ -221,38 +189,6 @@
           self.localizedName);
     NSFileVersion * currentVersion = [NSFileVersion currentVersionOfItemAtURL:self.fileURL];
     currentVersion.resolved = YES;
-}
-
-- (void)moveClosedFileToURL:(NSURL *)destinationURL
-                 completion:(CDBErrorCompletion)completion {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
-      
-        __block NSError * error = nil;
-        void (^accessor)(NSURL*, NSURL*) = ^(NSURL *newURL1, NSURL *newURL2) {
-            [self.fileManager moveItemAtURL:newURL1
-                                      toURL:newURL2
-                                      error:&error];
-            if (error == nil) {
-                [self presentedItemDidMoveToURL:newURL2];
-            }
-        };
-
-        // we need this error because coordinator makes variable nil and we lose result of a file operation
-        NSError * coordinationError = nil;
-        NSFileCoordinator * coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:self];
-        [coordinator coordinateWritingItemAtURL:self.fileURL
-                                        options:NSFileCoordinatorWritingForMoving
-                               writingItemAtURL:destinationURL
-                                        options:NSFileCoordinatorWritingForReplacing
-                                          error:&coordinationError
-                                     byAccessor:accessor];
-        NSError * valuableError = (error != nil) ? error
-                                                 : coordinationError;
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            completion(valuableError);
-        });
-    });
 }
 
 #pragma mark - Property -

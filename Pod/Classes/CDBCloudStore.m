@@ -6,16 +6,8 @@
 
 #define CDB_Store_Ubiqutos_URL_Postfix @".CDB.CDBCloudStore.store.ubiquitos.URL=NSURL"
 #define CDB_Store_Current_State_Postfix @".CDB.CDBCloudStore.store.current.state=CDBCloudStoreState"
-#define CDB_Store_Ubiqutos_Token_Postfix @".CDB.CDBCloudStore.store.ubiquitos.token=NSObject"
 #define CDB_Store_SQLite_Files_Postfixes @[@"-shm", @"-wal"]
 #define CDB_Store_Ubiquitos_Content_Local_Directory_Name @"CoreDataUbiquitySupport"
-
-
-#ifdef DEBUG
-    #define CDB_Store_Ubiquitos_Delay_For_Initiation_Sec 10
-#else
-    #define CDB_Store_Ubiquitos_Delay_For_Initiation_Sec 180
-#endif
 
 
 NSString * _Nonnull CDBCloudStoreWillChangeNotification = @"CDBCloudStoreWillChangeNotification";
@@ -26,9 +18,9 @@ NSString * _Nonnull CDBCloudStoreDidChangeNotification = @"CDBCloudStoreDidChang
 
 
 
-@property (strong, nonatomic, readwrite) NSURL * storeModelURL;
-@property (strong, nonatomic, readwrite) NSString * storeName;
-@property (strong, nonatomic, readwrite) NSManagedObjectModel * storeModel;
+@property (strong, nonatomic, readwrite) NSURL * modelURL;
+@property (strong, nonatomic, readwrite) NSString * name;
+@property (strong, nonatomic, readwrite) NSManagedObjectModel * model;
 
 @property (assign, nonatomic, readwrite) BOOL localStoreDisabled;
 @property (strong, nonatomic, readwrite) NSManagedObjectContext * localContext;
@@ -130,10 +122,10 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
 }
 
 - (NSDictionary *)ubiquitosStoreOptions {
-    if (_ubiquitosStoreOptions == nil && self.storeName != nil) {
+    if (_ubiquitosStoreOptions == nil && self.name != nil) {
         _ubiquitosStoreOptions =  @{NSMigratePersistentStoresAutomaticallyOption: @YES,
                                     NSInferMappingModelAutomaticallyOption: @YES,
-                                    NSPersistentStoreUbiquitousContentNameKey: self.storeName,
+                                    NSPersistentStoreUbiquitousContentNameKey: self.name,
                                    };
     }
     return _ubiquitosStoreOptions;
@@ -143,8 +135,8 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
 
 - (NSPersistentStoreCoordinator *)localStoreCoordinator {
     if (_localStoreCoordinator == nil
-        && self.storeName != nil
-        && self.storeModel != nil) {
+        && self.name != nil
+        && self.model != nil) {
         NSPersistentStoreCoordinator * storeCoordinator = [self defaultStoreCoordinator];
         
         NSError * error = nil;
@@ -157,7 +149,7 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
         if (error == nil) {
             _localStoreCoordinator = storeCoordinator;
             _localStore = store;
-            [self notifyDelegateThatCoreDataStackCreatedForUbiquitos:NO];
+//            [self notifyDelegateThatCoreDataStackCreatedForUbiquitos:NO];
         }
     }
     
@@ -166,55 +158,51 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
 
 - (NSPersistentStoreCoordinator *)ubiquitosStoreCoordinator {
     if (_ubiquitosStoreCoordinator == nil
-        && self.storeName != nil
-        && self.storeModel != nil) {
-//        NSURL * ubiquitosStoreURL = [[NSFileManager new] URLForUbiquityContainerIdentifier:nil];
-//        if (ubiquitosStoreURL != nil) {
-            NSPersistentStoreCoordinator * storeCoordinator = [self defaultStoreCoordinator];
-            
-            NSError * error = nil;
-            NSPersistentStore * store =
-            [storeCoordinator addPersistentStoreWithType:NSSQLiteStoreType
-                                           configuration:nil
-                                                     URL:self.ubiquitosTempStoreURL
-                                                 options:self.ubiquitosStoreOptions
-                                                   error:&error];
-            if (error == nil) {
-                _ubiquitosStoreCoordinator = storeCoordinator;
-                _ubiqutosStore = store;
-                [self subscribeToUbiquitosStoreNotifications];
-                [self preventLockSwitchingToUbiquitosStore];
-                [self notifyDelegateThatCoreDataStackCreatedForUbiquitos:YES];
-            }
-//        }
+        && self.name != nil
+        && self.model != nil) {
+        NSPersistentStoreCoordinator * storeCoordinator = [self defaultStoreCoordinator];
+        
+        NSError * error = nil;
+        NSPersistentStore * store =
+        [storeCoordinator addPersistentStoreWithType:NSSQLiteStoreType
+                                       configuration:nil
+                                                 URL:self.ubiquitosTempStoreURL
+                                             options:self.ubiquitosStoreOptions
+                                               error:&error];
+        if (error == nil) {
+            _ubiquitosStoreCoordinator = storeCoordinator;
+            _ubiqutosStore = store;
+            [self subscribeToUbiquitosStoreNotifications];
+//              [self notifyDelegateThatCoreDataStackCreatedForUbiquitos:YES];
+        }
     }
     
     return _ubiquitosStoreCoordinator;
 }
 
-- (NSManagedObjectModel *)storeModel {
-    if (_storeModel == nil
-        && self.storeModelURL != nil) {
-        _storeModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:self.storeModelURL];
+- (NSManagedObjectModel *)model {
+    if (_model == nil
+        && self.modelURL != nil) {
+        _model = [[NSManagedObjectModel alloc] initWithContentsOfURL:self.modelURL];
     }
     
-    return _storeModel;
+    return _model;
 }
 
 #pragma mark urls
 
 - (NSURL *)localStoreURL {
-    NSURL * result = [[self applicationDirectoryURLForPath:NSDocumentDirectory] URLByAppendingPathComponent:self.storeName];
+    NSURL * result = [[self applicationDirectoryURLForPath:NSDocumentDirectory] URLByAppendingPathComponent:self.name];
     return result;
 }
 
 - (NSURL *)ubiquitosStoreURL {
-    NSURL * result = [self loadUbiquitosStoreURLUsingStoreName:self.storeName];
+    NSURL * result = [self loadUbiquitosStoreURLUsingName:self.name];
     return result;
 }
 
 - (NSURL *)ubiquitosTempStoreURL {
-    NSURL * result = [[self applicationDirectoryURLForPath:NSLibraryDirectory] URLByAppendingPathComponent:self.storeName];;
+    NSURL * result = [[self applicationDirectoryURLForPath:NSLibraryDirectory] URLByAppendingPathComponent:self.name];;
     return result;
 }
 
@@ -254,26 +242,40 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
 
 #pragma mark - public -
 
-- (void)initiateWithStoreName:(NSString * _Nonnull)storeName
-                storeModelURL:(NSURL * _Nonnull)modelURL {
-    self.storeModelURL = modelURL;
-    self.storeName = storeName;
+- (void)initiateWithName:(NSString * _Nonnull)name
+                modelURL:(NSURL * _Nonnull)modelURL {
+    self.modelURL = modelURL;
+    self.name = name;
     
     
     [self postNotificationUsingName:CDBCloudStoreWillChangeNotification];
-    CDBCloudStoreState state = [self loadStoreStateForStoreName:self.storeName];
-    [self changeStoreStateTo:state];
-    [self postNotificationUsingName:CDBCloudStoreDidChangeNotification];
 }
 
-- (void)selectUbiquitos:(BOOL)ubiquitos {
-    CDBCloudStoreState state = self.state;
-    if (ubiquitos) {
-        state = CDBAddStoreState(state, CDBCloudStoreUbiquitosSelected);
-    } else {
-        state = CDBRemoveStoreState(state, CDBCloudStoreUbiquitosSelected);
+- (void)updateForUbiquityActive:(BOOL)active
+     usingSameUbiquityContainer:(BOOL)sameUbiquityContainer
+                        withURL:(NSURL *)containerURL {
+    if (self.name.length == 0) {
+        [self changeStateTo:0];
+        return;
     }
-    [self changeStoreStateTo:state];
+    
+    CDBCloudStoreState state = [self loadCurrentStoreStateUsingName:self.name];
+    
+    if (sameUbiquityContainer == NO) {
+        state = CDBRemoveStoreState(state, CDBCloudStoreUbiquitosInitiated);
+        state = CDBRemoveStoreState(state, CDBCloudStoreUbiquitosActive);
+    } else {
+        state = CDBAddStoreState(state, CDBCloudStoreUbiquitosInitiated);
+    }
+    
+    if (active) {
+        state = CDBAddStoreState(state, CDBCloudStoreUbiquitosAvailable);
+    } else {
+        state = CDBRemoveStoreState(state, CDBCloudStoreUbiquitosAvailable);
+        state = CDBRemoveStoreState(state, CDBCloudStoreUbiquitosActive);
+    }
+    
+    [self changeStateTo:state];
 }
 
 - (void)replaceLocalStoreUsingUbiquitosOneWithCompletion:(CDBErrorCompletion _Nullable)completion {
@@ -388,14 +390,21 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
 }
 
 - (void)removeAllUbiquitousContentWithCompletion:(CDBErrorCompletion _Nullable)completion {
-    [self dismissAndDisableUbiquitosCoreDataStack];
-      
-    NSError * error = nil;
     
-    [NSPersistentStoreCoordinator removeUbiquitousContentAndPersistentStoreAtURL:self.ubiquitosStoreURL
-                                                                         options:self.ubiquitosStoreOptions
-                                                                           error:&error];
-    [self enableUbiquitosCoreDataStack];
+    NSError * error = nil;
+    for (NSEntityDescription * entity in self.model.entities) {
+        @autoreleasepool {
+            [CDBCloudStore performRemovingAllObjectsForEntity:entity
+                                                 usingContext:self.ubiquitosContext
+                                                    batchSize:1000
+                                                        error:&error];
+            if (error != nil) {
+                RLogCDB(YES, @"removing duplicates for entity %@ failed with %@", entity.name, error);
+            }
+        }
+    }
+    
+    [self saveContext:self.ubiquitosContext];
     
     if (completion != nil) {
         completion(error);
@@ -414,11 +423,11 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
     NSMutableArray * URLsToRemove = [NSMutableArray array];
     [URLsToRemove addObject:URL];
     
-    NSString * storeName = URL.lastPathComponent;
+    NSString * name = URL.lastPathComponent;
     NSURL * containingDirectoryURL = [URL URLByDeletingLastPathComponent];
     
     for (NSString * postfix in CDB_Store_SQLite_Files_Postfixes) {
-        NSString * fileName = [storeName stringByAppendingString:postfix];
+        NSString * fileName = [name stringByAppendingString:postfix];
         NSURL * URLToDelete = [containingDirectoryURL URLByAppendingPathComponent:fileName];
         if (URLToDelete == nil) {
             continue;
@@ -434,41 +443,18 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
 
 #pragma mark store state changing
 
-- (CDBCloudStoreState)loadStoreStateForStoreName:(NSString *)name {
-    if (name.length == 0) {
-        return 0;
-    }
-    
-    // check if cloud user changed and make app use local store if cloud not initiated yet
-    CDBCloudStoreState result = [self loadCurrentStoreStateUsingStoreName:self.storeName];
-    
-    // definately we are not active yet
-    result = CDBRemoveStoreState(result, CDBCloudStoreUbiquitosActive);
-    
-    if (result & CDBCloudStoreUbiquitosInitiated) {
-        id token = [self currentUbiquitosStoreToken];
-        id initiatedOne = [self loadUbiquitosStoreTokenUsingStoreName:self.storeName];
-        if ([token isEqual:initiatedOne] == NO) {
-            result = CDBRemoveStoreState(result, CDBCloudStoreUbiquitosInitiated);
-            result = CDBRemoveStoreState(result, CDBCloudStoreUbiquitosActive);
-        }
-    }
-    
-    return result;
+- (CDBCloudStoreState)loadStoreStateForName:(NSString *)name {
+   
 }
 
-- (void)changeStoreStateTo:(CDBCloudStoreState)incomingState {
+- (void)changeStateTo:(CDBCloudStoreState)incomingState {
     if (self.state == incomingState) {
         return;
     }
     
     BOOL shouldPostDidChangeNotification = NO;
-    
-    if (CDBCheckStoreState(incomingState, CDBCloudStoreUbiquitosSelected) == NO) {
-        incomingState = CDBRemoveStoreState(incomingState, CDBCloudStoreUbiquitosActive);
-    }
 
-    if (CDBCheckStoreState(incomingState, CDBCloudStoreUbiquitosSelected)
+    if (CDBCheckStoreState(incomingState, CDBCloudStoreUbiquitosAvailable)
         && CDBCheckStoreState(incomingState, CDBCloudStoreUbiquitosInitiated)) {
         incomingState = CDBAddStoreState(incomingState, CDBCloudStoreUbiquitosActive);
     }
@@ -477,7 +463,7 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
         && (CDBCheckStoreState(incomingState, CDBCloudStoreUbiquitosActive) == NO)) {
         [self postNotificationUsingName:CDBCloudStoreWillChangeNotification];
         
-        [self notifyDelegateThatStoreSwitchingToUbiquitous:NO];
+        [self notifyDelegateThatStoreSwitchingToLocal];
         
         shouldPostDidChangeNotification = YES;
     }
@@ -486,21 +472,23 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
         && CDBCheckStoreState(incomingState, CDBCloudStoreUbiquitosActive)) {
         [self postNotificationUsingName:CDBCloudStoreWillChangeNotification];
         
+        [self touch:self.ubiquitosStoreCoordinator];
+        
         [self storeSystemProvidedUbiquitosStoreData];
         
-        [self notifyDelegateThatStoreSwitchingToUbiquitous:YES];
+        [self notifyDelegateThatStoreSwitchingToUbiquitous];
         
         shouldPostDidChangeNotification = YES;
     }
     
-    if (CDBCheckStoreState(incomingState, CDBCloudStoreUbiquitosSelected)
-        && _ubiquitosStoreCoordinator == nil) {
+    if (CDBCheckStoreState(incomingState, CDBCloudStoreUbiquitosAvailable)
+        && CDBCheckStoreState(incomingState, CDBCloudStoreUbiquitosInitiated) == NO) {
         [self initiateUbiquitosConnection];
     }
 
     _state = incomingState;
-    [self saveCurrentStoreState:_state
-                 usingStoreName:self.storeName];
+    [self saveCurrentState:_state
+                 usingName:self.name];
     
     if (shouldPostDidChangeNotification) {
         __weak typeof (self) wself = self;
@@ -521,30 +509,35 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
 
 #pragma mark delegate method calls
 
-- (void)notifyDelegateThatStoreSwitchingToUbiquitous:(BOOL)ubiquitous {
-    if ([self.delegate respondsToSelector:@selector(CDBCloudStore:switchingToUbiquitous:)]) {
-        [self.delegate CDBCloudStore:self
-                  switchingToUbiquitous:ubiquitous];
+- (void)notifyDelegateThatStoreSwitchingToUbiquitous {
+    if ([self.delegate respondsToSelector:@selector(ubiquitousActivationBeginAtCDBCloudStore:)]) {
+        [self.delegate ubiquitousActivationBeginAtCDBCloudStore:self];
+    }
+}
+
+- (void)notifyDelegateThatStoreSwitchingToLocal {
+    if ([self.delegate respondsToSelector:@selector(localActivationBeginAtCDBCloudStore:)]) {
+        [self.delegate localActivationBeginAtCDBCloudStore:self];
     }
 }
 
 - (void)notifyDelegateThatStoreDidChangeState {
-    if ([self.delegate respondsToSelector:@selector(CDBCoreDataDidChangeStateOfStore:)]) {
-        [self.delegate CDBCoreDataDidChangeStateOfStore:self];
+    if ([self.delegate respondsToSelector:@selector(didChangeStateOfCDBCloudStore:)]) {
+        [self.delegate didChangeStateOfCDBCloudStore:self];
     }
 }
 
 - (void)notifyDelegateThatUserWillRemoveContentOfStore {
-    if ([self.delegate respondsToSelector:@selector(CDBCoreDataDetectThatUserWillRemoveContentOfStore:)]) {
-        [self.delegate CDBCoreDataDetectThatUserWillRemoveContentOfStore:self];
+    if ([self.delegate respondsToSelector:@selector(didDetectThatUserWillRemoveContentOfCDBCloudStore:)]) {
+        [self.delegate didDetectThatUserWillRemoveContentOfCDBCloudStore:self];
     }
 }
 
-- (void)notifyDelegateThatCoreDataStackCreatedForUbiquitos:(BOOL)ubiquitos {
-    if ([self.delegate respondsToSelector:@selector(CDBCloudStore:didCreateCoreDataStackThatUbiquitous:)]) {
-        [self.delegate CDBCloudStore:self didCreateCoreDataStackThatUbiquitous:ubiquitos];
-    }
-}
+//- (void)notifyDelegateThatCoreDataStackCreatedForUbiquitos:(BOOL)ubiquitos {
+//    if ([self.delegate respondsToSelector:@selector(CDBCloudStore:didCreateCoreDataStackThatUbiquitous:)]) {
+//        [self.delegate CDBCloudStore:self didCreateCoreDataStackThatUbiquitous:ubiquitos];
+//    }
+//}
 
 #pragma mark context 
 
@@ -567,22 +560,6 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
     [context performBlockAndWait:^{
         [context reset];
     }];
-}
-
-#pragma mark prevent cloud lock when losed store changed InitialImportCompleted notification
-
-- (void)preventLockSwitchingToUbiquitosStore {
-    __weak typeof (self) wself = self;
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
-                                 (int64_t)(CDB_Store_Ubiquitos_Delay_For_Initiation_Sec * NSEC_PER_SEC)),
-                                 dispatch_get_main_queue(), ^{
-        CDBCloudStoreState state = wself.state;
-        if (CDBCheckStoreState(state, CDBCloudStoreUbiquitosSelected)
-            && _ubiquitosStoreCoordinator != nil) {
-            state = CDBAddStoreState(state, CDBCloudStoreUbiquitosInitiated);
-            [wself changeStoreStateTo:state];
-        }
-    });
 }
 
 #pragma mark iCloud store changes handling
@@ -629,7 +606,7 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
             
         case NSPersistentStoreUbiquitousTransitionTypeContentRemoved: {
             [self notifyDelegateThatUserWillRemoveContentOfStore];
-            state = CDBRemoveStoreState(state, CDBCloudStoreUbiquitosSelected);
+            state = CDBRemoveStoreState(state, CDBCloudStoreUbiquitosAvailable);
             state = CDBRemoveStoreState(state, CDBCloudStoreUbiquitosActive);
         }   break;
             
@@ -640,7 +617,7 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
             break;
     }
     
-    [self changeStoreStateTo:state];
+    [self changeStateTo:state];
     
     [self saveContext:self.currentContext];
     [self resetContext:self.currentContext];
@@ -664,7 +641,6 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
     CDBCloudStoreState state = self.state;
     switch (transitionType) {
         case NSPersistentStoreUbiquitousTransitionTypeAccountAdded: {
-            state = [self loadStoreStateForStoreName:self.storeName];
         }   break;
         
         case NSPersistentStoreUbiquitousTransitionTypeAccountRemoved: {
@@ -681,7 +657,7 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
             break;
     }
     
-    [self changeStoreStateTo:state];
+    [self changeStateTo:state];
 }
 
 - (NSPersistentStoreUbiquitousTransitionType)transitionTypeFromNotification:(NSNotification *)notification {
@@ -703,27 +679,27 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
 
 #pragma mark CDB.CDBCloudStore.store.ubiquitos.URL=NSURL
 
-- (NSString *)ubiquitosStoreURLKeyUsingStoreName:(NSString *)storeName {
-    NSString * result = [storeName stringByAppendingString:CDB_Store_Ubiqutos_URL_Postfix];
+- (NSString *)ubiquitosStoreURLKeyUsingName:(NSString *)name {
+    NSString * result = [name stringByAppendingString:CDB_Store_Ubiqutos_URL_Postfix];
     return result;
 }
 
 - (void)saveUbiquitosStoreURL:(NSURL *)storeURL
-               usingStoreName:(NSString *)storeName {
-    if (storeName.length == 0
+                    usingName:(NSString *)name {
+    if (name.length == 0
         || storeURL == nil) {
         return;
     }
     
-    NSString * key = [self ubiquitosStoreURLKeyUsingStoreName:storeName];
+    NSString * key = [self ubiquitosStoreURLKeyUsingName:name];
     
     [[NSUserDefaults standardUserDefaults] setURL:storeURL
                                            forKey:key];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
-- (NSURL *)loadUbiquitosStoreURLUsingStoreName:(NSString *)storeName {
-    NSString * key = [self ubiquitosStoreURLKeyUsingStoreName:storeName];
+- (NSURL *)loadUbiquitosStoreURLUsingName:(NSString *)name {
+    NSString * key = [self ubiquitosStoreURLKeyUsingName:name];
     
     NSURL * result = [[NSUserDefaults standardUserDefaults] URLForKey:key];
     return result;
@@ -731,79 +707,50 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
 
 #pragma mark CDB.CDBCloudStore.store.current.state=CDBCloudStoreState
 
-- (NSString *)currentStoreTypeKeyUsingStoreName:(NSString *)storeName {
-    NSString * result = [storeName stringByAppendingString:CDB_Store_Current_State_Postfix];
+- (NSString *)currentStoreTypeKeyUsingName:(NSString *)name {
+    NSString * result = [name stringByAppendingString:CDB_Store_Current_State_Postfix];
     return result;
 }
 
-- (void)saveCurrentStoreState:(CDBCloudStoreState)storeState
-               usingStoreName:(NSString *)storeName {
-    if (storeName.length == 0) {
+- (void)saveCurrentState:(CDBCloudStoreState)storeState
+               usingName:(NSString *)name {
+    if (name.length == 0) {
         return;
     }
     
-    NSString * key = [self currentStoreTypeKeyUsingStoreName:storeName];
+    NSString * key = [self currentStoreTypeKeyUsingName:name];
     
     [[NSUserDefaults standardUserDefaults] setInteger:storeState
                                                forKey:key];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
-- (CDBCloudStoreState)loadCurrentStoreStateUsingStoreName:(NSString *)storeName {
-    NSString * key = [self currentStoreTypeKeyUsingStoreName:storeName];
+- (CDBCloudStoreState)loadCurrentStoreStateUsingName:(NSString *)name {
+    NSString * key = [self currentStoreTypeKeyUsingName:name];
     
     CDBCloudStoreState result = (CDBCloudStoreState)[[NSUserDefaults standardUserDefaults] integerForKey:key];
     return result;
 }
 
-#pragma mark CDB.CDBCloudStore.store.ubiquitos.token=NSObject
-
-- (NSString *)ubiquitosStoreTokenKeyUsingStoreName:(NSString *)storeName {
-    NSString * result = [storeName stringByAppendingString:CDB_Store_Ubiqutos_Token_Postfix];
-    return result;
-}
-
-- (void)saveUbiquitosStoreToken:(id<NSObject, NSCoding, NSCopying>)storeToken
-                 usingStoreName:(NSString *)storeName {
-    if (storeName.length == 0
-        || storeToken == nil) {
-        return;
-    }
-    
-    NSString * key = [self ubiquitosStoreTokenKeyUsingStoreName:storeName];
-    
-    [[NSUserDefaults standardUserDefaults] setObject:storeToken
-                                              forKey:key];
-    [[NSUserDefaults standardUserDefaults] synchronize];
-}
-
-- (id<NSObject, NSCoding, NSCopying>)loadUbiquitosStoreTokenUsingStoreName:(NSString *)storeName {
-    NSString * key = [self ubiquitosStoreTokenKeyUsingStoreName:storeName];
-    
-    id<NSObject, NSCoding, NSCopying> result = [[NSUserDefaults standardUserDefaults] objectForKey:key];
-    return result;
-}
 
 #pragma mark ubiquitos url store
 
 - (void)storeSystemProvidedUbiquitosStoreData {
     NSURL * URL = self.ubiqutosStore.URL;
+    DLogCDB(@"Ubiquios store URL %@", URL);
     [self saveUbiquitosStoreURL:URL
-                 usingStoreName:self.storeName];
-    id<NSObject,NSCopying,NSCoding> storeToken = [self currentUbiquitosStoreToken];
-    [self saveUbiquitosStoreToken:storeToken
-                   usingStoreName:self.storeName];
+                      usingName:self.name];
 }
 
 #pragma mark store coordinator
 
 - (NSPersistentStoreCoordinator *)defaultStoreCoordinator {
-    if (self.storeModel == nil) {
+    if (self.model == nil) {
         return nil;
     }
     
     NSPersistentStoreCoordinator * result =
-        [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:self.storeModel];
+        [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:self.model];
     return result;
 }
 
@@ -813,11 +760,7 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
     [object isKindOfClass:[object class]];
 }
 
-- (id<NSObject,NSCopying,NSCoding>)currentUbiquitosStoreToken {
-    NSFileManager * fileManager = [NSFileManager defaultManager];
-    id<NSObject,NSCopying,NSCoding> result = fileManager.ubiquityIdentityToken;
-    return result;
-}
+
 
 #pragma mark - files
 
@@ -924,11 +867,6 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
                 uniquePropertyKey, timestampKey, entity.name);
         return;
     }
-    
-    [context performBlockAndWait:^{
-        [context save:error];
-        [context reset];
-    }];
 }
 
 + (NSArray *)valuesWithDublicatesForEntity:(NSEntityDescription *)entity
@@ -1113,6 +1051,71 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
     for (NSManagedObject * object in mananagedObjects) {
         [object setValue:[self generateEntityUID]
                   forKey:uniquePropertyKey];
+    }
+    [context performBlockAndWait:^{
+        [context save:error];
+        [context reset];
+    }];
+}
+
++ (void)performRemovingAllObjectsForEntity:(NSEntityDescription *)entity
+                              usingContext:(NSManagedObjectContext *)context
+                                 batchSize:(NSUInteger)batchSize
+                                     error:(NSError **)error {
+    if (entity == nil
+        || context == nil) {
+        return;
+    }
+    
+    if (batchSize == 0) {
+        batchSize = 1000;
+    }
+    
+    NSFetchRequest * request = [NSFetchRequest fetchRequestWithEntityName:entity.name];
+    request.fetchBatchSize = batchSize;
+    
+    NSArray<NSManagedObject *> * results = [context executeFetchRequest:request
+                                                                  error:error];
+    
+    if (*error != nil) {
+        RLogCDB(YES, @" failed fetch objects for entity %@ %@",
+                entity.name, *error);
+        return;
+    }
+    
+    NSUInteger currentIndex = 0;
+    
+    while (*error == nil
+           && currentIndex < results.count) {
+        NSUInteger maxAvailableLenght = results.count - currentIndex;
+        NSUInteger length = maxAvailableLenght < batchSize ? maxAvailableLenght
+        : batchSize;
+        NSRange currentBatchRange = NSMakeRange(currentIndex, length);
+        if (NSMaxRange(currentBatchRange) <= results.count) {
+            @autoreleasepool {
+                NSArray * batch = [results subarrayWithRange:currentBatchRange];
+                [self removeManagedObjects:batch
+                                 inContext:context
+                                     error:error];
+            }
+        }
+        
+        currentIndex = NSMaxRange(currentBatchRange);
+    }
+    
+    if (*error != nil) {
+        RLogCDB(YES, @" failed remove objects for entity %@ %@",
+                entity.name, error);
+        return;
+    }
+}
+
+
++ (void)removeManagedObjects:(NSArray<NSManagedObject *> *)mananagedObjects
+                   inContext:(NSManagedObjectContext *)context
+                       error:(NSError **)error {
+    for (NSManagedObject * object in mananagedObjects) {
+        [context deleteObject:object];
     }
     [context performBlockAndWait:^{
         [context save:error];

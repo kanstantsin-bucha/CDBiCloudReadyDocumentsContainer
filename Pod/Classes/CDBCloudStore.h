@@ -50,9 +50,9 @@ BOOL CDBCheckStoreState(CDBCloudStoreState state, NSUInteger option);
 @property (assign, nonatomic, readonly) CDBCloudStoreState state;
 
 
-@property (strong, nonatomic, readonly, nullable) NSURL * storeModelURL;
-@property (strong, nonatomic, readonly, nullable) NSString * storeName;
-@property (strong, nonatomic, readonly, nullable) NSManagedObjectModel * storeModel;
+@property (strong, nonatomic, readonly, nullable) NSURL * modelURL;
+@property (strong, nonatomic, readonly, nullable) NSString * name;
+@property (strong, nonatomic, readonly, nullable) NSManagedObjectModel * model;
 
 @property (assign, nonatomic, readonly) BOOL localStoreDisabled;
 @property (strong, nonatomic, readonly, nullable) NSManagedObjectContext * localContext;
@@ -69,10 +69,13 @@ BOOL CDBCheckStoreState(CDBCloudStoreState state, NSUInteger option);
 @property (strong, nonatomic, readonly, nullable) NSPersistentStoreCoordinator * ubiquitosStoreCoordinator;
 
 
-- (void)initiateWithStoreName:(NSString * _Nonnull)storeName
-                storeModelURL:(NSURL * _Nonnull)modelURL;
+- (void)initiateWithName:(NSString * _Nonnull)storeName
+                modelURL:(NSURL * _Nonnull)modelURL;
 
-- (void)selectUbiquitos:(BOOL)ubiquitos;
+- (void)updateForUbiquityActive:(BOOL)available
+     usingSameUbiquityContainer:(BOOL)sameUbiquityContainer
+                        withURL:(NSURL * _Nullable)containerURL;
+
 
 - (void)dismissAndDisableLocalCoreDataStack;
 - (void)enableLocalCoreDataStack;
@@ -161,12 +164,12 @@ BOOL CDBCheckStoreState(CDBCloudStoreState state, NSUInteger option);
  * @brief
  * called when store switching current context
  * called before store changes it's state
- * you could migrate you data from store to store there
- * please don't change store state inside this methods
+ * both stores online so you could migrate you data from store to store there
+ * please don't change selected state inside this methods
  **/
 
-- (void)CDBCloudStore:(CDBCloudStore * _Nullable)store
-   switchingToUbiquitous:(BOOL)ubiquitous;
+- (void)ubiquitousActivationBeginAtCDBCloudStore:(CDBCloudStore * _Nullable)store;
+- (void)localActivationBeginAtCDBCloudStore:(CDBCloudStore * _Nullable)store;
 
 /**
  * @brief
@@ -190,11 +193,10 @@ BOOL CDBCheckStoreState(CDBCloudStoreState state, NSUInteger option);
  * you could perform some core data tasks with store here before it data comes to UI
  **/
 
-- (void)CDBCloudStore:(CDBCloudStore * _Nullable)store
-didCreateCoreDataStackThatUbiquitous:(BOOL)ubiquitos;
+//- (void)didCreateUbiquitosCoreDataStackOfCDBCloudStore:(CDBCloudStore * _Nullable)store;
+//- (void)didCreateLocalCoreDataStackOfCDBCloudStore:(CDBCloudStore * _Nullable)store;
 
-
-- (void)CDBCoreDataDidChangeStateOfStore:(CDBCloudStore * _Nullable)store;
+- (void)didChangeStateOfCDBCloudStore:(CDBCloudStore * _Nullable)store;
 
 /**
  * @brief
@@ -204,6 +206,6 @@ didCreateCoreDataStackThatUbiquitous:(BOOL)ubiquitos;
  * you probably should migrate you cloud data to local on this call or lose it forever
  **/
 
-- (void)CDBCoreDataDetectThatUserWillRemoveContentOfStore:(CDBCloudStore * _Nullable)store;
+- (void)didDetectThatUserWillRemoveContentOfCDBCloudStore:(CDBCloudStore * _Nullable)store;
 
 @end

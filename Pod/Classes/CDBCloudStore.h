@@ -116,10 +116,20 @@ BOOL CDBCheckStoreState(CDBCloudStoreState state, NSUInteger option);
 /**
  * @brief
  * remove all ubiquitos content from the cloud and all devices
- * this method dissmiss ubiquitos store during execution
+ * this method dissmiss all stores during execution
  **/
 
 - (void)removeAllUbiquitousContentWithCompletion:(CDBErrorCompletion _Nullable)completion;
+
+
+/**
+ * @brief
+ * remove all ubiquitos content from the cloud and all devices
+ * this method clears ubiquitos store during execution than save context
+ **/
+
+- (void)removeAllUbiquitousStoreDataWithCompletion:(CDBErrorCompletion _Nullable)completion;
+
 
 /**
  * @brief

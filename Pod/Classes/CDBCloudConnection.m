@@ -153,7 +153,7 @@ NSString * _Nonnull CDBCloudConnectionDidChangeState = @"CDBCloudConnectionDidCh
     }
     
     [_documents updateForUbiquityActive:self.ubiquitosActive
-                 usingUbiquityContainerURL:self.ubiquityContainerURL];
+              usingUbiquityContainerURL:self.ubiquityContainerURL];
     [_store updateForUbiquityActive:self.ubiquitosActive
          usingSameUbiquityContainer:self.usingSameUbiquityContainer
                             withURL:self.ubiquityContainerURL];

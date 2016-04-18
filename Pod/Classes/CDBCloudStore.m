@@ -390,6 +390,28 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
 }
 
 - (void)removeAllUbiquitousContentWithCompletion:(CDBErrorCompletion _Nullable)completion {
+    [self dismissAndDisableLocalCoreDataStack];
+    [self dismissAndDisableUbiquitosCoreDataStack];
+    
+    NSError * error = nil;
+    
+    [NSPersistentStoreCoordinator removeUbiquitousContentAndPersistentStoreAtURL:self.ubiquitosStoreURL
+                                                                         options:self.ubiquitosStoreOptions
+                                                                           error:&error];
+    
+    if (error != nil) {
+        DLogCDB(@"failed with error %@", error);
+    }
+    
+    [self enableUbiquitosCoreDataStack];
+    [self enableLocalCoreDataStack];
+    
+    if (completion != nil) {
+        completion(error);
+    }
+}
+
+- (void)removeAllUbiquitousStoreDataWithCompletion:(CDBErrorCompletion _Nullable)completion {
     
     NSError * error = nil;
     for (NSEntityDescription * entity in self.model.entities) {

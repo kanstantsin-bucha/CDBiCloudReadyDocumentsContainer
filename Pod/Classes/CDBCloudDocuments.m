@@ -161,18 +161,13 @@
 #pragma mark - Notifications -
 
 - (void)handleMetadataQueryDidUpdateNotification:(NSNotification *)notification {
-    [self.metadataQuery disableUpdates];
-    [self updateFilesWithCompletion:^{
-        [self.metadataQuery enableUpdates];
-    }];
+    [self updateFilesWithCompletion:^{}];
     [self logMetadataQueryNotification:notification];
 }
 
 - (void)handleMetadataQueryDidFinishGatheringNotification:(NSNotification *)notification {
-    [self.metadataQuery disableUpdates];
-    [self updateFilesWithCompletion:^{
-        [self.metadataQuery enableUpdates];
-    }];
+    [self updateFilesWithCompletion:^{}];
+    [self logMetadataQueryNotification:notification];
 }
 
 #pragma mark - Protocols -
@@ -646,6 +641,7 @@
 
 - (void)updateFilesWithCompletion:(CDBCompletion)completion {
     __weak typeof (self) wself = self;
+    [self.metadataQuery disableUpdates];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
         NSMutableArray * documentsURLs = [NSMutableArray array];
@@ -664,7 +660,11 @@
             if (completion != nil) {
                 completion();
             }
-            [wself notifyDelegateThatUbiquitosDocumentsDidChange];
+            [wself notifyDelegateThatUbiquitosDocumentsDidChangeQuery:self.metadataQuery];
+            
+            if (self.metadataQueryShouldStopAfterFinishGathering == NO) {
+                [self.metadataQuery startQuery];
+            }
         });
     });
 }
@@ -794,9 +794,10 @@
     });
 }
 
-- (void)notifyDelegateThatUbiquitosDocumentsDidChange {
-    if ([self.delegate respondsToSelector:@selector(ubiquitosDocumentsDidChangeInCDBCloudDocuments:)]) {
-        [self.delegate ubiquitosDocumentsDidChangeInCDBCloudDocuments:self];
+- (void)notifyDelegateThatUbiquitosDocumentsDidChangeQuery:(NSMetadataQuery *)query {
+    if ([self.delegate respondsToSelector:@selector(CDBCloudDocuments:didChangeMetadataQuery:)]) {
+        [self.delegate CDBCloudDocuments:self
+                  didChangeMetadataQuery:query];
     }
 }
 

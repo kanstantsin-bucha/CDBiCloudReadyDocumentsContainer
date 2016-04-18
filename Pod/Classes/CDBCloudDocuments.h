@@ -28,6 +28,7 @@ CDBDocumentDelegate
 
 @property (assign, nonatomic) BOOL verbose;
 @property (assign, nonatomic, readonly) BOOL ubiquitosActive;
+@property (assign, nonatomic) BOOL metadataQueryShouldStopAfterFinishGathering;
 
 
 @property (copy, nonatomic, readonly, nullable) NSURL * currentDocumentsURL;
@@ -144,7 +145,8 @@ CDBDocumentDelegate
 
 - (void)didChangeCloudStateOfCDBCloudDocuments:(CDBCloudDocuments * _Nonnull)documents;
 
-- (void)ubiquitosDocumentsDidChangeInCDBCloudDocuments:(CDBCloudDocuments * _Nonnull)documents;
+- (void)CDBCloudDocuments:(CDBCloudDocuments * _Nonnull)documents
+   didChangeMetadataQuery:(NSMetadataQuery *)query;
 
 - (void)CDBCloudDocuments:(CDBCloudDocuments * _Nonnull)documents
     didAutoresolveConflictInCDBDocument:(CDBDocument * _Nonnull)document;

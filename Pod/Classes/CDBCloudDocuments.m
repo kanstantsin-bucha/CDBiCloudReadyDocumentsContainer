@@ -25,6 +25,8 @@
 @property (strong, nonatomic, readonly) NSFileManager * fileManager;
 @property (nonatomic, strong) NSURL * ubiquityContainerURL;
 
+@property (strong, nonatomic) dispatch_queue_t serialQueue;
+
 @end
 
 
@@ -39,6 +41,13 @@
 }
 
 #pragma mark Getter
+
+- (__strong dispatch_queue_t)serialQueue {
+    if (_serialQueue == nil) {
+        _serialQueue =  dispatch_queue_create("CDB.iCloudReady.CloudDocuments.GCD.queue.serial", DISPATCH_QUEUE_SERIAL);
+    }
+    return _serialQueue;
+}
 
 - (NSURL *)currentDocumentsURL {
     NSURL * result = nil;
@@ -329,7 +338,7 @@
     UIDocumentSaveOperation operation = exist ? UIDocumentSaveForOverwriting
                                               : UIDocumentSaveForCreating;
     
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
+    dispatch_async(self.serialQueue, ^(void) {
         [result saveToURL:result.fileURL
          forSaveOperation:operation
         completionHandler:^(BOOL success) {
@@ -449,7 +458,7 @@
 
 - (void)deleteClosedDocument:(CDBDocument * _Nonnull)document
                   completion:(CDBErrorCompletion _Nonnull)completion {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
+    dispatch_async(self.serialQueue, ^(void) {
         __block NSError * deletetionError = nil;
         
         void (^accessor)(NSURL *) = ^(NSURL * newURL1) {
@@ -500,7 +509,7 @@
         }
     }
     
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
+    dispatch_async(self.serialQueue, ^(void) {
         NSError * error = nil;
         [self.fileManager setUbiquitous:ubiquitous
                               itemAtURL:document.fileURL
@@ -518,7 +527,7 @@
 - (void)moveClosedDocument:(CDBDocument *)document
                      toURL:(NSURL *)destinationURL
                 completion:(CDBErrorCompletion)completion {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
+    dispatch_async(self.serialQueue, ^(void) {
         
         __block NSError * copyingError = nil;
         void (^accessor)(NSURL*, NSURL*) = ^(NSURL *newURL1, NSURL *newURL2) {
@@ -546,7 +555,7 @@
                      toURL:(NSURL *)destinationURL
                    replace:(BOOL)replace
                 completion:(CDBErrorCompletion)completion {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
+    dispatch_async(self.serialQueue, ^(void) {
         __block NSError * copyingError = nil;
         void (^accessor)(NSURL*, NSURL*) = ^(NSURL *newURL1, NSURL *newURL2) {
             if (replace) {

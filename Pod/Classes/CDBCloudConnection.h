@@ -17,6 +17,9 @@
 extern NSString * _Nonnull CDBCloudConnectionDidChangeState;
 
 
+@protocol CDBCloudConnectionDelegate;
+
+
 @interface CDBCloudConnection : NSObject
 
 /**
@@ -24,6 +27,7 @@ extern NSString * _Nonnull CDBCloudConnectionDidChangeState;
  **/
 
 @property (assign, nonatomic, readonly) CDBCloudState state;
+@property (weak, nonatomic) id<CDBCloudConnectionDelegate> delegate;
 
 @property (strong, nonatomic, readonly, nullable) NSURL * ubiquityContainerURL;
 @property (strong, nonatomic, readonly, nullable) id ubiquityIdentityToken;
@@ -32,6 +36,7 @@ extern NSString * _Nonnull CDBCloudConnectionDidChangeState;
 @property (strong, nonatomic, readonly, nullable) CDBCloudStore * store;
 
 @property (assign, nonatomic, readonly) BOOL ubiquitosActive;
+@property (assign, nonatomic, readonly) BOOL usingSameUbiquityContainer;
 
 @property (assign, nonatomic) BOOL ubiquitosDesired;
 
@@ -41,7 +46,27 @@ extern NSString * _Nonnull CDBCloudConnectionDidChangeState;
            usingContainerIdentifier:(NSString * _Nullable)ID
              documentsPathComponent:(NSString * _Nullable)pathComponent
                           storeName:(NSString * _Nullable)storeName
-                      storeModelURL:(NSURL * _Nullable)storeModelURL;
+                      storeModelURL:(NSURL * _Nullable)storeModelURL
+                           delegete:(id<CDBCloudConnectionDelegate> _Nullable)delegate;
+
+- (void)showDeniedAccessAlert;
+- (void)provideStateChanges;
              
+
+@end
+
+
+@protocol CDBCloudConnectionDelegate <NSObject>
+
+@optional
+
+/**
+ default implemetation provide state changes to the documents and cloud
+ if you override this method you should provide statechanges by itelf
+ or calling [ provideStateChanges] method
+ **/
+- (void)CDBCloudConnectionDidChangeState:(CDBCloudConnection *)connection;
+- (void)CDBCloudConnectionDidDetectDisabledCloud:(CDBCloudConnection *)connection;
+
 
 @end

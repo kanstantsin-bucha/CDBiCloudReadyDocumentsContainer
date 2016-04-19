@@ -26,7 +26,7 @@ NSString * _Nonnull CDBCloudConnectionDidChangeState = @"CDBCloudConnectionDidCh
 @property (strong, nonatomic, readonly) NSFileManager * fileManager;
 @property (nonatomic, strong) NSURL * ubiquityContainerURL;
 @property (strong, nonatomic) id<NSObject,NSCopying,NSCoding> ubiquityIdentityToken;
-@property (assign, nonatomic) BOOL usingSameUbiquityContainer;
+@property (assign, nonatomic, readwrite) BOOL usingSameUbiquityContainer;
 
 @end
 
@@ -57,7 +57,7 @@ NSString * _Nonnull CDBCloudConnectionDidChangeState = @"CDBCloudConnectionDidCh
     }
     
     _ubiquitosDesired = ubiquitosDesired;
-    [self handleStateChanges];
+    [self applyCurrentState];
 }
 
 #pragma mark - lazy loading - 
@@ -130,40 +130,71 @@ NSString * _Nonnull CDBCloudConnectionDidChangeState = @"CDBCloudConnectionDidCh
            usingContainerIdentifier:(NSString * _Nullable)ID
              documentsPathComponent:(NSString * _Nullable)pathComponent
                           storeName:(NSString * _Nullable)storeName
-                      storeModelURL:(NSURL * _Nullable)storeModelURL {
+                      storeModelURL:(NSURL * _Nullable)storeModelURL
+                           delegete:(id<CDBCloudConnectionDelegate>)delegate {
     self.ubiquitosDesired = desired;
     self.containerID = ID;
     self.documentsPathComponent = pathComponent;
     self.storeName = storeName;
     self.storeModelURL = storeModelURL;
+    self.delegate = delegate;
     
     [self subscribeToNotifications];
-    [self performCloudStateCheckWithCompletion:^{
-        [self handleStateChanges];
-    }];
+    [self applyCurrentState];
+}
+
+#pragma mark - public -
+
+- (void)showDeniedAccessAlert {
+    UIAlertView * alert = [[UIAlertView alloc] initWithTitle:LSCDB(iCloud Unavailable)
+                                                     message:LSCDB(Make sure that you are signed into a valid iCloud account and documents are Enabled)
+                                                    delegate:nil
+                                           cancelButtonTitle:LSCDB(OK)
+                                           otherButtonTitles:nil];
+    [alert show];
 }
 
 #pragma mark - private -
 
 #pragma mark handle state changes
 
-- (void)handleStateChanges {
-    if (self.state == CDBCloudAccessDenied) {
+- (void)applyCurrentState {
+    [self performCloudStateCheckWithCompletion:^{
+        if (self.state == CDBCloudAccessDenied) {
+            [self handleDeniedAccess];
+        }
+        
+        [self handleStateChanges];
+        [self postNotificationUsingName:CDBCloudConnectionDidChangeState];
+    }];
+}
+
+- (void)handleDeniedAccess {
+    if ([self.delegate respondsToSelector:@selector(CDBCloudConnectionDidDetectDisabledCloud:)]) {
+        [self.delegate CDBCloudConnectionDidDetectDisabledCloud:self];
+    } else {
         [self showDeniedAccessAlert];
     }
-    
+}
+
+- (void)handleStateChanges {
+    if ([self.delegate respondsToSelector:@selector(CDBCloudConnectionDidChangeState:)]) {
+        [self.delegate CDBCloudConnectionDidChangeState:self];
+    } else {
+        [self provideStateChanges];
+    }
+}
+
+- (void)provideStateChanges {
     [_documents updateForUbiquityActive:self.ubiquitosActive
               usingUbiquityContainerURL:self.ubiquityContainerURL];
     [_store updateForUbiquityActive:self.ubiquitosActive
          usingSameUbiquityContainer:self.usingSameUbiquityContainer
                             withURL:self.ubiquityContainerURL];
-    [self postNotificationUsingName:CDBCloudConnectionDidChangeState];
 }
 
 - (void)cloudContentAvailabilityChanged:(NSNotification *)notification {
-    [self performCloudStateCheckWithCompletion:^{
-        [self handleStateChanges];
-    }];
+    [self applyCurrentState];
 }
 
 - (void)performCloudStateCheckWithCompletion:(dispatch_block_t)completion {
@@ -202,17 +233,6 @@ NSString * _Nonnull CDBCloudConnectionDidChangeState = @"CDBCloudConnectionDidCh
             }
         });
     });
-}
-
-#pragma mark Show Unavailable Alert
-
-- (void)showDeniedAccessAlert {
-    UIAlertView * alert = [[UIAlertView alloc] initWithTitle:LSCDB(iCloud Unavailable)
-                                                     message:LSCDB(Make sure that you are signed into a valid iCloud account and documents are Enabled)
-                                                    delegate:nil
-                                           cancelButtonTitle:LSCDB(OK)
-                                           otherButtonTitles:nil];
-    [alert show];
 }
 
 #pragma mark CDB.CDBCloudStore.store.ubiquitos.token=NSObject

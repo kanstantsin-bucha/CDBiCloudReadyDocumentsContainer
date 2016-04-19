@@ -160,7 +160,8 @@ NSString * _Nonnull CDBCloudConnectionDidChangeState = @"CDBCloudConnectionDidCh
 
 - (void)applyCurrentState {
     [self performCloudStateCheckWithCompletion:^{
-        if (self.state == CDBCloudAccessDenied) {
+        if (self.ubiquitosDesired
+            && self.state == CDBCloudAccessDenied) {
             [self handleDeniedAccess];
         }
         

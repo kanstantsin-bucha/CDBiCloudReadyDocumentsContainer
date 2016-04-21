@@ -467,7 +467,7 @@
         };
 
         // we need this error because coordinator makes variable nil and we lose result of a file operation
-        NSError * coordinationError = nil;
+        __block NSError * coordinationError = nil;
         NSFileCoordinator * fileCoordinator = [[NSFileCoordinator alloc] initWithFilePresenter:document];
         [fileCoordinator coordinateWritingItemAtURL:document.fileURL
                                             options:NSFileCoordinatorWritingForDeleting
@@ -475,8 +475,10 @@
                                          byAccessor:accessor];
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            completion(coordinationError != nil ? coordinationError
-                                         : deletetionError);
+            if (completion != nil) {
+                completion(coordinationError != nil ? coordinationError
+                                             : deletetionError);
+            }
         });
     });
 }
@@ -536,7 +538,7 @@
                                       error:&copyingError];
         };
         
-        NSError * coordinationError = nil;
+        __block NSError * coordinationError = nil;
         NSFileCoordinator * coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:document];
         [coordinator coordinateWritingItemAtURL:document.fileURL
                                         options:NSFileCoordinatorWritingForMoving
@@ -545,8 +547,10 @@
                                           error:&coordinationError
                                      byAccessor:accessor];
         dispatch_async(dispatch_get_main_queue(), ^{
-            completion(coordinationError != nil ? coordinationError
-                       : copyingError);
+            if (completion != nil) {
+                completion(coordinationError != nil ? coordinationError
+                                                    : copyingError);
+            }
         });
     });
 }
@@ -567,7 +571,7 @@
                                       error:&copyingError];
         };
         
-        NSError * coordinationError = nil;
+        __block NSError * coordinationError = nil;
         NSFileCoordinator * coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:document];
         [coordinator coordinateReadingItemAtURL:document.fileURL
                                         options:NSFileCoordinatorReadingWithoutChanges
@@ -576,8 +580,10 @@
                                           error:&coordinationError
                                      byAccessor:accessor];
         dispatch_async(dispatch_get_main_queue(), ^{
-            completion(coordinationError != nil ? coordinationError
-                                                : copyingError);
+            if (completion != nil) {
+                completion(coordinationError != nil ? coordinationError
+                                                    : copyingError);
+            }
         });
     });
 }

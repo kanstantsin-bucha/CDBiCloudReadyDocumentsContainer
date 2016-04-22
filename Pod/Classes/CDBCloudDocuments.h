@@ -118,6 +118,9 @@ CDBDocumentDelegate
                                documentContent:(NSData * _Nullable)content
                                     completion:(CDBiCloudDocumentCompletion _Nonnull)completion;
 
+- (void)readContentOfUbiquitosDocumentAtURL:(NSURL *)URL
+                                 completion:(void(^)(NSData * data, NSError * error))completion;
+
 /**
  Delete document in localDocumentsURL directory (for local documents)
  Could delete both local and ubiquitous iCloud documents;

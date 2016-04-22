@@ -195,7 +195,7 @@
     
     __weak typeof(self) wself = self;
     
-    BOOL removed = [self.fileManager fileExistsAtPath:URL.path] == NO;
+    BOOL removed = [self.fileManager isUbiquitousItemAtURL:URL] == NO;
     if (removed) {
         [self notifyDelegateThatDocumentsDidRemoveUbiquitosDocumentAtURL:URL];
      
@@ -350,6 +350,27 @@
                 completion(nil, [result iCloudDocumentNotOperableError]);
             });
         }];
+    });
+}
+
+- (void)readContentOfUbiquitosDocumentAtURL:(NSURL *)URL
+                                 completion:(void(^)(NSData * data, NSError * error))completion {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        __block NSData *data = nil;
+        __block NSError *error = nil;
+        NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
+        [coordinator coordinateReadingItemAtURL:URL
+                                        options:0
+                                          error:&error
+                                     byAccessor:^(NSURL *newURL) {
+                                         data = [NSData dataWithContentsOfURL:newURL];
+                                     }];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (completion != nil) {
+                completion(data, error);
+            }
+        });
     });
 }
 

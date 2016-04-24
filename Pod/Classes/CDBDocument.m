@@ -24,8 +24,13 @@
     return document;
 }
 
-- (instancetype)initWithFileURL:(NSURL *)url {
-    self = [super initWithFileURL:url];
+- (instancetype)initWithFileURL:(NSURL *)URL {
+    if (URL.path.length == 0) {
+        DLogCDB(@"%FAILED create document with nil URL@");
+        return nil;
+    }
+    
+    self = [super initWithFileURL:URL];
     if (self) {
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(handleUIDocumentStateChangedNotification:)

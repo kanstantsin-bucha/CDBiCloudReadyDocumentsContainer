@@ -4,6 +4,7 @@
 
 
 #define CDBiCloudDocumentsDirectoryPathComponent @"Documents"
+#define CDB_Documents_Processing_Last_Date_Format @"CDB.CDBiCloudReady.documents.%@.processedDate=NSDate"
 
 
 @interface CDBCloudDocuments ()
@@ -473,6 +474,84 @@
     }];
 }
 
+#pragma mark document contents handling
+
+- (void)processDocumentWithName:(NSString *)name
+                          atURL:(NSURL *)URL
+                processingBlock:(void(^) (NSData * documentData, NSError * error))processingBlock {
+    if (processingBlock == nil) {
+        return;
+    }
+    
+    NSError * error = nil;
+    NSDate * incomingDate = nil;
+    [URL getResourceValue:&incomingDate
+                   forKey:NSURLContentModificationDateKey
+                    error:&error];
+    
+    if (error != nil) {
+        processingBlock(nil, error);
+    }
+    
+    BOOL should = [self shouldProcessDocumentWithName:name
+                                         modifiedDate:incomingDate];
+    
+    if (should == NO) {
+        return;
+    }
+    
+    [self readContentOfDocumentAtURL:URL
+                          completion:^(NSData *data, NSError *error) {
+        processingBlock(data, error);
+        if (error == nil) {
+            [self saveProcessedDate:incomingDate
+                forDocumentWithName:name];
+        }
+    }];
+}
+
+- (void)processStringsDocumentWithName:(NSString *)name
+                                 atURL:(NSURL *)URL
+               separationCharactersSet:(NSCharacterSet *)separators
+                     onlyUniqueStrings:(BOOL)unique
+                processingStringsBlock:(void(^) (NSArray * documentStrings, NSError * error))stringsProcessingBlock {
+    if (stringsProcessingBlock == nil) {
+        return;
+    }
+    
+    [self processDocumentWithName:name
+                            atURL:URL
+                  processingBlock:^(NSData * documentData, NSError *error) {
+        if (error != nil) {
+            stringsProcessingBlock(nil, error);
+            return;
+        }
+
+        NSString * content = [[NSString alloc] initWithData:documentData
+                                                  encoding:NSUTF8StringEncoding];
+        if (content == nil) {
+            // preserve windows users
+            content = [[NSString alloc] initWithData:documentData
+                                            encoding:NSASCIIStringEncoding];
+        }
+
+        if (content == nil) {
+            stringsProcessingBlock(nil, [NSError errorWithDomain:NSStringFromClass([self class])
+                                                            code:0
+                                                        userInfo:@{NSLocalizedDescriptionKey: @"Failed to convert file data to strings"}]);
+            return;
+        }
+
+        NSArray * stringsToProcess = [content componentsSeparatedByCharactersInSet:separators];
+        if (unique) {
+            NSSet * uniqueStrings = [NSSet setWithArray:stringsToProcess];
+            stringsToProcess = uniqueStrings;
+        }
+        stringsProcessingBlock(stringsToProcess, nil);
+    }];
+}
+
+
 #pragma mark - Private -
 
 #pragma mark Safe working with files
@@ -625,23 +704,6 @@
 }
 
 #pragma mark Synchronize documents
-
-//- (void)initiateSynchronizationWithCompletion:(CDBErrorCompletion)completion {
-//    if (self.state >= CDBContaineriCloudRequestingInfo) {
-//        if (completion != nil) {
-//            completion(nil);
-//        }
-//    }
-//    
-//    if (self.state < CDBContaineriCloudUbiquitosContainerAvailable) {
-//        [self performCloudStateCheckWithCompletion:^{
-//            [self startSynchronizationWithCompletion:completion];
-//        }];
-//        return;
-//    }
-//    
-//    [self startSynchronizationWithCompletion:completion];
-//}
 
 - (void)startSynchronizationWithCompletion:(CDBErrorCompletion)completion {
     if (self.documentsDirectoryWatchdog == nil) {
@@ -803,6 +865,58 @@
     }
 }
 
+#pragma mark handle documents versioning
+
+- (BOOL)shouldProcessDocumentWithName:(NSString *)documentName
+                         modifiedDate:(NSDate *)date {
+    if (documentName == nil
+        || date == nil) {
+        return NO;
+    }
+    
+    NSDate * lastProcessedDate = [self lastProcessedDateForDocumentWithName:documentName];
+    
+    if (lastProcessedDate == nil) {
+        return YES;
+    }
+    
+    BOOL result = [lastProcessedDate compare:date] == NSOrderedAscending;
+    return result;
+}
+
+- (NSDate *)lastProcessedDateForDocumentWithName:(NSString *)documentName {
+    NSString * processedKey = [self processedDateKeyForDocumentWithName:documentName];
+    if (processedKey == nil) {
+        return nil;
+    }
+    
+    NSDate * result = [[NSUserDefaults standardUserDefaults] objectForKey:processedKey];
+    return result;
+}
+
+- (void)saveProcessedDate:(NSDate *)processedDate
+      forDocumentWithName:(NSString *)documentName {
+    if (processedDate == nil) {
+        return;
+    }
+    
+    NSString * processedKey = [self processedDateKeyForDocumentWithName:documentName];
+    if (processedKey == nil) {
+        return;
+    }
+    
+    [[NSUserDefaults standardUserDefaults] setObject:processedDate
+                                              forKey:processedKey];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+}
+
+- (NSString *)processedDateKeyForDocumentWithName:(NSString *)documentName {
+    if (documentName == nil) {
+        return nil;
+    }
+    NSString * result = [NSString stringWithFormat:CDB_Documents_Processing_Last_Date_Format, documentName];
+    return result;
+}
 
 #pragma mark Ubiquitios URL
 

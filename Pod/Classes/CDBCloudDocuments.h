@@ -120,6 +120,19 @@ CDBDocumentDelegate
 
 - (void)readContentOfDocumentAtURL:(NSURL *)URL
                         completion:(void(^)(NSData * data, NSError * error))completion;
+/**
+ Process block called only once for every single revision of the document with unique name
+ if file modified date doesn't change processing block doesn't call
+**/
+- (void)processDocumentWithName:(NSString *)name
+                          atURL:(NSURL *)URL
+                processingBlock:(void(^) (NSData * documentData, NSError * error))processingBlock;
+
+- (void)processStringsDocumentWithName:(NSString *)name
+                                 atURL:(NSURL *)URL
+               separationCharactersSet:(NSCharacterSet *)separators
+                     onlyUniqueStrings:(BOOL)unique
+                processingStringsBlock:(void(^) (NSArray * documentStrings, NSError * error))stringsProcessingBlock;
 
 /**
  Delete document in localDocumentsURL directory (for local documents)

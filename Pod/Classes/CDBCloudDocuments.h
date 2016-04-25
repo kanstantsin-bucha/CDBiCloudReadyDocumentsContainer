@@ -118,8 +118,8 @@ CDBDocumentDelegate
                                documentContent:(NSData * _Nullable)content
                                     completion:(CDBiCloudDocumentCompletion _Nonnull)completion;
 
-- (void)readContentOfUbiquitosDocumentAtURL:(NSURL *)URL
-                                 completion:(void(^)(NSData * data, NSError * error))completion;
+- (void)readContentOfDocumentAtURL:(NSURL *)URL
+                        completion:(void(^)(NSData * data, NSError * error))completion;
 
 /**
  Delete document in localDocumentsURL directory (for local documents)

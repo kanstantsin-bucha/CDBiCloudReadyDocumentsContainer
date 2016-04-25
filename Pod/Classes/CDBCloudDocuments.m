@@ -353,8 +353,8 @@
     });
 }
 
-- (void)readContentOfUbiquitosDocumentAtURL:(NSURL *)URL
-                                 completion:(void(^)(NSData * data, NSError * error))completion {
+- (void)readContentOfDocumentAtURL:(NSURL *)URL
+                        completion:(void(^)(NSData * data, NSError * error))completion {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         __block NSData *data = nil;
         __block NSError *error = nil;

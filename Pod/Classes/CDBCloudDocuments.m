@@ -600,10 +600,8 @@
         return;
     }
     
-    NSURL * ubiquitosURL = [self ubiquityDocumentFileURLUsingFileName:document.fileName];
-    NSURL * localURL = [self localDocumentFileURLUsingFileName:document.fileName];
-    NSURL * destinationURL = ubiquitous ? ubiquitosURL
-                                        : localURL;
+    NSURL * destinationURL = ubiquitous ? [self ubiquityDocumentFileURLUsingLocalURL:document.fileURL]
+                                        : [self localDocumentFileURLUsingUbiquityURL:document.fileURL];
     
     if ([document.fileURL isEqual:destinationURL]) {
         if (completion != nil) {
@@ -930,6 +928,44 @@
 - (NSURL *)localDocumentFileURLUsingFileName:(NSString *)fileName {
     NSURL * result = [self.localDocumentsURL URLByAppendingPathComponent:fileName
                                                              isDirectory:NO];
+    return result;
+}
+
+- (NSURL *)ubiquityDocumentFileURLUsingLocalURL:(NSURL *)localURL {
+    
+    NSString * relativeURLString = [self relativeURLStringFromURL:localURL
+                                                     usingBaseURL:self.localDocumentsURL];
+    NSURL * result = nil;
+    if (relativeURLString != nil) {
+        result = [self.ubiquityDocumentsURL URLByAppendingPathComponent:relativeURLString];
+    } else {
+        result = [self ubiquityDocumentFileURLUsingFileName:localURL.lastPathComponent];
+    }
+    
+    return result;
+}
+
+- (NSURL *)localDocumentFileURLUsingUbiquityURL:(NSURL *)ubiquitousURL {
+    NSString * relativeURLString = [self relativeURLStringFromURL:ubiquitousURL
+                                                     usingBaseURL:self.ubiquityDocumentsURL];
+    NSURL * result = nil;
+    if (relativeURLString != nil) {
+        result = [self.localDocumentsURL URLByAppendingPathComponent:relativeURLString];
+    } else {
+        result = [self ubiquityDocumentFileURLUsingFileName:ubiquitousURL.lastPathComponent];
+    }
+    
+    return result;
+}
+
+- (NSString *)relativeURLStringFromURL:(NSURL *)URL
+                          usingBaseURL:(NSURL *)baseURL {
+    NSRange baseRange = [URL.path rangeOfString:baseURL.path];
+    if (baseRange.location == 0) {
+       return nil;
+    }
+    
+    NSString * result = [URL.path substringFromIndex:baseRange.length];
     return result;
 }
 

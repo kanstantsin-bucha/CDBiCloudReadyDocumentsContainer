@@ -53,11 +53,11 @@ code_sign_if_enabled() {
 
 if [[ "$CONFIGURATION" == "Debug" ]]; then
   install_framework 'Pods-CDBiCloudReadyDocumentsContainer_Example/CDBKit.framework'
+  install_framework 'Pods-CDBiCloudReadyDocumentsContainer_Example/CDBUUID.framework'
   install_framework 'Pods-CDBiCloudReadyDocumentsContainer_Example/CDBiCloudReadyDocumentsContainer.framework'
-  install_framework 'Pods-CDBiCloudReadyDocumentsContainer_Example/Identify.framework'
 fi
 if [[ "$CONFIGURATION" == "Release" ]]; then
   install_framework 'Pods-CDBiCloudReadyDocumentsContainer_Example/CDBKit.framework'
+  install_framework 'Pods-CDBiCloudReadyDocumentsContainer_Example/CDBUUID.framework'
   install_framework 'Pods-CDBiCloudReadyDocumentsContainer_Example/CDBiCloudReadyDocumentsContainer.framework'
-  install_framework 'Pods-CDBiCloudReadyDocumentsContainer_Example/Identify.framework'
 fi

@@ -1,34 +1,24 @@
 //
-//  Identify.m
-//  Identify
+//  CDBUUID.m
+//  CDBUUID
 //
 //  This file includes third-party code, see below for copyright statements.
 //
 
-#import "Identify.h"
+#import "CDBUUID.h"
+
 #import <CommonCrypto/CommonCrypto.h>
-#import <AdSupport/ASIdentifierManager.h>
+
 
 static NSString *Base64StringFromBytes(char, u_char *, size_t);
-static int url_b64_ntop(u_char const *, size_t, char *, size_t);
-
-@implementation Identify
+static NSInteger url_b64_ntop(u_char const *, size_t, char *, size_t);
 
 
-#pragma mark - Class Methods
+@implementation CDBUUID
 
-+ (NSString *)deviceId
-{
-    NSUUID *ident = [[ASIdentifierManager sharedManager] advertisingIdentifier];
-    
-    uuid_t bytes;
-    [ident getUUIDBytes:bytes];
-    
-    return Base64StringFromBytes('d', bytes, sizeof(bytes));
-}
+#pragma mark - class public -
 
-+ (NSString *)makeId
-{
++ (NSString *)UUIDString {
     CFUUIDRef uuid = CFUUIDCreate(NULL);
     CFUUIDBytes bytes = CFUUIDGetUUIDBytes(uuid);
     
@@ -38,8 +28,7 @@ static int url_b64_ntop(u_char const *, size_t, char *, size_t);
     return result;
 }
 
-+ (NSString *)synthesizeId:(NSString *)ident, ...
-{
++ (NSString *)sha1UsingUUIDStrings:(NSString *)ident, ... {
     u_char digest[CC_SHA1_DIGEST_LENGTH];
     
     __block CC_SHA1_CTX ctx;
@@ -49,7 +38,7 @@ static int url_b64_ntop(u_char const *, size_t, char *, size_t);
         va_start(args, ident);
         for (id arg = ident; arg != nil; arg = va_arg(args, id)){
             NSData *data = [arg dataUsingEncoding:NSUTF8StringEncoding];
-            CC_SHA1_Update(&ctx, [data bytes], [data length]);
+            CC_SHA1_Update(&ctx, [data bytes], (unsigned int)[data length]);
         }
         va_end(args);
     }
@@ -75,17 +64,17 @@ static NSString *Base64StringFromBytes(char prefix, u_char *data, size_t len)
     if (written == -1) {
         free(buffer);
         return nil;
-    } else{
-        return [[NSString alloc]
-                initWithBytesNoCopy:buffer
-                length:(ceil(len * 8.0 / 6.0) + 1)
-                encoding:NSUTF8StringEncoding
-                freeWhenDone:YES];
+    } else {
+        NSString * result = [[NSString alloc] initWithBytesNoCopy:buffer
+                                                           length:(ceil(len * 8.0 / 6.0) + 1)
+                                                         encoding:NSUTF8StringEncoding
+                                                     freeWhenDone:YES];
+        return result;
     }
 }
 
 
-#pragma mark - Third Party
+#pragma mark - third party -
 
 /*	$OpenBSD: base64.c,v 1.5 2006/10/21 09:55:03 otto Exp $	*/
 
@@ -141,7 +130,7 @@ static const char StandardPad64 = '=';
 static const char URLSafeBase64[] =
 "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
-static int url_b64_ntop(u_char const *src, size_t srclength, char *target, size_t targsize)
+static NSInteger url_b64_ntop(u_char const *src, size_t srclength, char *target, size_t targsize)
 {
     const char *alphabet = URLSafeBase64;
 	size_t datalength = 0;

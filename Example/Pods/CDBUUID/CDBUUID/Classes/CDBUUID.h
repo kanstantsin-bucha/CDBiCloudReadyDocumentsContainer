@@ -1,18 +1,23 @@
 //
-//  Identify.h
-//  Identify
+//  CDBUUID.h
+//  CDBUUID
 //
 
 #import <Foundation/Foundation.h>
 
+
 /**
- * The `Identify` class provides methods for generating compact, unique ids.
+ * The CDBUUID class provides methods for generating compact, unique ids.
+ * It based on `Identify` class of https://github.com/weaver/Identify
+ * but with removed ASIdentifierManager which has issue when submitting to the app store
  *
  * Ids are encoded as urlsafe base64 (letters, numbers, underscores, dashes),
  * any `=` padding is stripped off, and they are given a single character 
  * prefix.
  */
-@interface Identify : NSObject
+
+
+@interface CDBUUID : NSObject
 
 /**--------------------------------------------------------------------
  * @name Class Methods
@@ -27,18 +32,7 @@
  *
  * @return a unique id
  */
-+ (NSString *)makeId;
-
-/**
- * Generate a compact id for this device.
- *
- * This method uses the `advertisingIdentifier` from `ASIdentifierManager`. The
- * encoded result is 23 characters long. It is usually consistend unless the 
- * device is reset.
- *
- * @return a unique id for this device
- */
-+ (NSString *)deviceId;
++ (NSString *)UUIDString;
 
 /**
  * Hash together several ids to synthesize a new id.
@@ -51,6 +45,6 @@
  *
  * @return a synthetic id
  */
-+ (NSString *)synthesizeId:(NSString *)ident, ...NS_REQUIRES_NIL_TERMINATION;
++ (NSString *)sha1UsingUUIDStrings:(NSString *)ident, ...NS_REQUIRES_NIL_TERMINATION;
 
 @end

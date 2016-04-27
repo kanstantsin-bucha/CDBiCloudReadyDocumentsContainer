@@ -38,8 +38,7 @@ Pod::Spec.new do |s|
   s.requires_arc = true
 
   s.source_files = 'Pod/Classes/**/*'
-  # s.public_header_files = 'Pod/Classes/**/*.h'
   s.frameworks = 'UIKit', 'CoreData'
   s.dependency 'CDBKit', '~> 0.0'
-  s.dependency 'Identify', '~> 0.1'
+  s.dependency 'CDBUUID', '~> 1.0.0'
 end

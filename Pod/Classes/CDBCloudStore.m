@@ -1,7 +1,7 @@
 
 
 #import "CDBCloudStore.h"
-#import <Identify/Identify.h>
+#import <CDBUUID/CDBUUID.h>
 
 
 #define CDB_Store_Ubiqutos_URL_Postfix @".CDB.CDBCloudStore.store.ubiquitos.URL=NSURL"
@@ -464,10 +464,6 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
 #pragma mark - private -
 
 #pragma mark store state changing
-
-- (CDBCloudStoreState)loadStoreStateForName:(NSString *)name {
-   
-}
 
 - (void)changeStateTo:(CDBCloudStoreState)incomingState {
     if (self.state == incomingState) {
@@ -1127,7 +1123,7 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
     
     if (*error != nil) {
         RLogCDB(YES, @" failed remove objects for entity %@ %@",
-                entity.name, error);
+                entity.name, *error);
         return;
     }
 }
@@ -1151,7 +1147,7 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
 }
 
 + (NSString *)generateEntityUID {
-    NSString * result = [Identify makeId];
+    NSString * result = [CDBUUID UUIDString];
     return result;
 }
 

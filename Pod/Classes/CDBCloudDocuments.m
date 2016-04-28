@@ -207,17 +207,27 @@
         return;
     }
     
+#warning correct path to foundation private
+    NSURL * correctedURL = URL;
+    NSString * path = URL.path;
+    if (self.ubiquityContainerURL.path.length > 10
+        && [[self.ubiquityContainerURL.path substringToIndex:9] isEqualToString:@"/private/"]
+        && path.length > 6
+        && [[path substringToIndex:5] isEqualToString:@"/var/"]) {
+        correctedURL = [NSURL fileURLWithPath:[@"/private" stringByAppendingString:path]];
+    }
+    
     __weak typeof(self) wself = self;
     
-    BOOL removed = [self.fileManager isUbiquitousItemAtURL:URL] == NO;
+    BOOL removed = [self.fileManager isUbiquitousItemAtURL:correctedURL] == NO;
     if (removed) {
-        [self.uniqueCloudDocumentURLs removeObject:URL];
-        [self notifyDelegateThatDocumentsDidRemoveUbiquitosDocumentAtURL:URL];
+        [self.uniqueCloudDocumentURLs removeObject:correctedURL];
+        [self notifyDelegateThatDocumentsDidRemoveUbiquitosDocumentAtURL:correctedURL];
      
         return;
     }
-    [self.uniqueCloudDocumentURLs addObject:URL];
-    [self notifyDelegateThatDocumentsDidChangeUbiquitosDocumentAtURL:URL];
+    [self.uniqueCloudDocumentURLs addObject:correctedURL];
+    [self notifyDelegateThatDocumentsDidChangeUbiquitosDocumentAtURL:correctedURL];
 }
 
 #pragma mark - Public -

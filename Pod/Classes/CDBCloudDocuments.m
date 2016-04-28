@@ -269,6 +269,12 @@
     return [result copy];
 }
 
+- (NSString *)documentAliasUsingItURL:(NSURL *)URL {
+    NSString * result = [self relativeURLStringFromURL:URL
+                                          usingBaseURL:self.currentDocumentsURL];
+    return result;
+}
+
 - (void)addDelegate:(id<CDBCloudDocumentsDelegate> _Nonnull)delegate {
     self.delegate = delegate;
 }
@@ -507,35 +513,47 @@
 - (void)processDocumentWithName:(NSString *)name
                           atURL:(NSURL *)URL
                 processingBlock:(void(^) (NSData * documentData, NSError * error))processingBlock {
-    if (processingBlock == nil) {
+    if (processingBlock == nil
+       || name.length == 0) {
         return;
     }
     
-    NSError * error = nil;
-    NSDate * incomingDate = nil;
-    [URL getResourceValue:&incomingDate
-                   forKey:NSURLContentModificationDateKey
-                    error:&error];
-    
-    if (error != nil) {
-        processingBlock(nil, error);
-    }
-    
-    BOOL should = [self shouldProcessDocumentWithName:name
-                                         modifiedDate:incomingDate];
-    
-    if (should == NO) {
-        return;
-    }
-    
-    [self readContentOfDocumentAtURL:URL
-                          completion:^(NSData *data, NSError *error) {
-        processingBlock(data, error);
-        if (error == nil) {
-            [self saveProcessedDate:incomingDate
-                forDocumentWithName:name];
+    dispatch_async(self.serialQueue, ^(void) {
+        NSError * error = nil;
+        NSDate * incomingDate = nil;
+        [URL getResourceValue:&incomingDate
+                       forKey:NSURLContentModificationDateKey
+                        error:&error];
+        
+        if (error != nil) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                processingBlock(nil, error);
+            });
+            return;
         }
-    }];
+        
+        NSDate * lastProcessedDate = [self lastProcessedDateForDocumentWithName:name];
+        BOOL should = lastProcessedDate == nil
+                      || [lastProcessedDate compare:incomingDate] == NSOrderedAscending;
+        if (should == NO) {
+            return;
+        }
+        
+        [self saveProcessedDate:incomingDate
+            forDocumentWithName:name];
+        
+        [self readContentOfDocumentAtURL:URL
+                              completion:^(NSData *data, NSError *error) {
+            if (error != nil) {
+                // restore processed date because we failed to process
+                [self saveProcessedDate:lastProcessedDate
+                    forDocumentWithName:name];
+            }
+            dispatch_async(dispatch_get_main_queue(), ^{
+                processingBlock(data, error);
+            });
+        }];
+    });
 }
 
 - (void)processStringsDocumentWithName:(NSString *)name
@@ -547,6 +565,7 @@
         return;
     }
     
+  
     [self processDocumentWithName:name
                             atURL:URL
                   processingBlock:^(NSData * documentData, NSError *error) {
@@ -573,10 +592,12 @@
         NSArray * stringsToProcess = [content componentsSeparatedByCharactersInSet:separators];
         if (unique) {
             NSSet * uniqueStrings = [NSSet setWithArray:stringsToProcess];
-            stringsToProcess = uniqueStrings;
+            stringsToProcess = uniqueStrings.allObjects;
         }
+       
         stringsProcessingBlock(stringsToProcess, nil);
     }];
+
 }
 
 
@@ -893,23 +914,6 @@
 }
 
 #pragma mark handle documents versioning
-
-- (BOOL)shouldProcessDocumentWithName:(NSString *)documentName
-                         modifiedDate:(NSDate *)date {
-    if (documentName == nil
-        || date == nil) {
-        return NO;
-    }
-    
-    NSDate * lastProcessedDate = [self lastProcessedDateForDocumentWithName:documentName];
-    
-    if (lastProcessedDate == nil) {
-        return YES;
-    }
-    
-    BOOL result = [lastProcessedDate compare:date] == NSOrderedAscending;
-    return result;
-}
 
 - (NSDate *)lastProcessedDateForDocumentWithName:(NSString *)documentName {
     NSString * processedKey = [self processedDateKeyForDocumentWithName:documentName];

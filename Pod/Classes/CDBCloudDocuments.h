@@ -69,9 +69,15 @@ CDBDocumentDelegate
       usingUbiquityContainerURL:(NSURL * _Nullable)containerURL;
 
 /**
- return all URLs
+ return all URLs in specified directory
  **/
-- (NSArray *)URLsForItemsInsideUbiquitosDirectory:(NSURL *)directory;
+- (NSArray * _Nullable)URLsForItemsInsideUbiquitosDirectory:(NSURL * _Nonnull)directory;
+
+/**
+ return all URLs in specified directory
+ **/
+
+- (NSString * _Nullable)documentAliasUsingItURL:(NSURL *_Nonnull)URL;
 
 /**
  Add delegate to notify changes

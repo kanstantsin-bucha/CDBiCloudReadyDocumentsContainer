@@ -55,7 +55,6 @@ CDBDocumentDelegate
 **/
 
 @property (strong, nonatomic, readonly, nullable) NSArray<NSURL *> * cloudDocumentURLs;
-@property (strong, nonatomic, readonly, nullable) NSArray<NSString *> * cloudDocumentNames;
 
 /**
  This is for cloudConnection only
@@ -68,6 +67,11 @@ CDBDocumentDelegate
 
 - (void)updateForUbiquityActive:(BOOL)active
       usingUbiquityContainerURL:(NSURL * _Nullable)containerURL;
+
+/**
+ return all URLs
+ **/
+- (NSArray *)URLsForItemsInsideUbiquitosDirectory:(NSURL *)directory;
 
 /**
  Add delegate to notify changes

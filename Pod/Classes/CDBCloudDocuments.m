@@ -17,8 +17,7 @@
 
 @property (strong, nonatomic) CDBDocument * documentsDirectoryWatchdog;
 
-@property (strong, nonatomic, readwrite) NSArray<NSURL *> * cloudDocumentURLs;
-@property (strong, nonatomic, readwrite) NSArray<NSString *> * cloudDocumentNames;
+@property (strong, nonatomic) NSMutableSet <NSURL *> * uniqueCloudDocumentURLs;
 
 @property (weak, nonatomic) id<CDBCloudDocumentsDelegate> delegate;
 
@@ -48,6 +47,11 @@
         _serialQueue =  dispatch_queue_create("CDB.iCloudReady.CloudDocuments.GCD.queue.serial", DISPATCH_QUEUE_SERIAL);
     }
     return _serialQueue;
+}
+
+- (NSArray<NSURL *> *)cloudDocumentURLs {
+    NSArray * result = self.uniqueCloudDocumentURLs.allObjects;
+    return result;
 }
 
 - (NSURL *)currentDocumentsURL {
@@ -140,6 +144,15 @@
 
 #pragma mark Lazy loading
 
+- (NSMutableSet<NSURL *> *)uniqueCloudDocumentURLs {
+    if (_uniqueCloudDocumentURLs != nil) {
+        return _uniqueCloudDocumentURLs;
+    }
+    
+    _uniqueCloudDocumentURLs = [NSMutableSet set];
+    return _uniqueCloudDocumentURLs;
+}
+
 - (NSURL *)localDocumentsURL {
     if (_localDocumentsURL == nil) {
         NSArray * URLs = [self.fileManager URLsForDirectory:NSDocumentDirectory
@@ -198,11 +211,12 @@
     
     BOOL removed = [self.fileManager isUbiquitousItemAtURL:URL] == NO;
     if (removed) {
+        [self.uniqueCloudDocumentURLs removeObject:URL];
         [self notifyDelegateThatDocumentsDidRemoveUbiquitosDocumentAtURL:URL];
      
         return;
     }
-    
+    [self.uniqueCloudDocumentURLs addObject:URL];
     [self notifyDelegateThatDocumentsDidChangeUbiquitosDocumentAtURL:URL];
 }
 
@@ -239,6 +253,20 @@
               self.ubiquityContainerURL);
         [self notifyDelegateThatDocumentsDidChangeState];
     }
+}
+
+- (NSArray *)URLsForItemsInsideUbiquitosDirectory:(NSURL *)directory {
+    NSMutableArray * result = [NSMutableArray array];
+    for (NSURL * URL in self.cloudDocumentURLs) {
+        NSString * relativeURLString = [self relativeURLStringFromURL:URL
+                                                         usingBaseURL:directory];
+        if (relativeURLString == nil) {
+            continue;
+        }
+        
+        [result addObject:URL];
+    }
+    return [result copy];
 }
 
 - (void)addDelegate:(id<CDBCloudDocumentsDelegate> _Nonnull)delegate {
@@ -753,8 +781,7 @@
         }];
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            wself.cloudDocumentURLs = [documentsURLs copy];
-            wself.cloudDocumentNames = [documentNames copy];
+            wself.uniqueCloudDocumentURLs = [NSMutableSet setWithArray:documentsURLs];
             if (completion != nil) {
                 completion();
             }
@@ -963,11 +990,11 @@
 - (NSString *)relativeURLStringFromURL:(NSURL *)URL
                           usingBaseURL:(NSURL *)baseURL {
     NSRange baseRange = [URL.path rangeOfString:baseURL.path];
-    if (baseRange.location == 0) {
+    if (baseRange.location == NSNotFound) {
        return nil;
     }
     
-    NSString * result = [URL.path substringFromIndex:baseRange.length];
+    NSString * result = [URL.path substringFromIndex:NSMaxRange(baseRange)+1];
     return result;
 }
 

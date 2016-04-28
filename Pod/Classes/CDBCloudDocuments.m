@@ -1004,11 +1004,13 @@
 - (NSString *)relativeURLStringFromURL:(NSURL *)URL
                           usingBaseURL:(NSURL *)baseURL {
     NSRange baseRange = [URL.path rangeOfString:baseURL.path];
-    if (baseRange.location == NSNotFound) {
+    NSInteger relativeURLstartIndex = NSMaxRange(baseRange)+1;
+    if (baseRange.location == NSNotFound
+    ||  relativeURLstartIndex >= URL.path.length) {
        return nil;
     }
     
-    NSString * result = [URL.path substringFromIndex:NSMaxRange(baseRange)+1];
+    NSString * result = [URL.path substringFromIndex:relativeURLstartIndex];
     return result;
 }
 

@@ -591,6 +591,7 @@
         if (completion != nil) {
             completion(nil);
         }
+        return;
     }
     
     if (self.ubiquityContainerAccessible == NO) {
@@ -607,6 +608,7 @@
         if (completion != nil) {
             completion(nil);
         }
+        return;
     }
     
     dispatch_async(self.serialQueue, ^(void) {
@@ -952,7 +954,7 @@
     if (relativeURLString != nil) {
         result = [self.localDocumentsURL URLByAppendingPathComponent:relativeURLString];
     } else {
-        result = [self ubiquityDocumentFileURLUsingFileName:ubiquitousURL.lastPathComponent];
+        result = [self localDocumentFileURLUsingFileName:ubiquitousURL.lastPathComponent];
     }
     
     return result;

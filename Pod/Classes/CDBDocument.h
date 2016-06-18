@@ -8,7 +8,7 @@
 #endif
 
 
-#import "CDBiCloudReadyConstants.h"
+#import "CDBiCloudKitConstants.h"
 #import <CDBKit/CDBKit.h>
 
 
@@ -21,7 +21,7 @@
 - (void)didAutoresolveConflictInCDBDocument:(CDBDocument * _Nonnull)document;
 
 - (void)CDBDocumentDirectory:(CDBDocument * _Nonnull)document
-       didChangeSubitemAtURL:(NSURL *)URL;
+       didChangeSubitemAtURL:(NSURL * _Nullable)URL;
 
 @end
 

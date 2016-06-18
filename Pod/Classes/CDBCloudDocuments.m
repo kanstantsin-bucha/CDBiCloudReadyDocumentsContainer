@@ -207,7 +207,7 @@
         return;
     }
     
-#warning correct path to foundation private
+    // correct path to foundation private on device
     NSURL * correctedURL = URL;
     NSString * path = URL.path;
     if (self.ubiquityContainerURL.path.length > 10
@@ -216,8 +216,6 @@
         && [[path substringToIndex:5] isEqualToString:@"/var/"]) {
         correctedURL = [NSURL fileURLWithPath:[@"/private" stringByAppendingString:path]];
     }
-    
-    __weak typeof(self) wself = self;
     
     BOOL removed = [self.fileManager isUbiquitousItemAtURL:correctedURL] == NO;
     if (removed) {
@@ -722,8 +720,8 @@
         __block NSError * copyingError = nil;
         void (^accessor)(NSURL*, NSURL*) = ^(NSURL *newURL1, NSURL *newURL2) {
             if (replace) {
-                [self.fileManager removeItemAtPath:newURL2
-                                             error:nil];
+                [self.fileManager removeItemAtURL:newURL2
+                                            error:nil];
             }
             [self.fileManager copyItemAtURL:newURL1
                                       toURL:newURL2

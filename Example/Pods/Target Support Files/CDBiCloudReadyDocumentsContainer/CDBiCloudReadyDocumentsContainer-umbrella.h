@@ -4,6 +4,7 @@
 #import "CDBCloudDocuments.h"
 #import "CDBCloudStore.h"
 #import "CDBDocument.h"
+#import "CDBiCloudKitConstants.h"
 #import "CDBiCloudReadyConstants.h"
 #import "CDBiCloudReadyDocumentsContainer.h"
 

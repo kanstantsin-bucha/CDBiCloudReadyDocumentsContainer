@@ -26,7 +26,7 @@
 
 - (instancetype)initWithFileURL:(NSURL *)URL {
     if (URL.path.length == 0) {
-        DLogCDB(@"%FAILED create document with nil URL@");
+        DLogCDB(@"FAILED create document with nil URL");
         return nil;
     }
     

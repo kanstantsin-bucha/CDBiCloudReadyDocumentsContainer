@@ -12,7 +12,7 @@
 
 
 #import <CDBKit/CDBKit.h>
-#import "CDBiCloudReadyConstants.h"
+#import "CDBiCloudKitConstants.h"
 
 
 extern NSString * _Nonnull CDBCloudStoreWillChangeNotification;
@@ -148,7 +148,7 @@ BOOL CDBCheckStoreState(CDBCloudStoreState state, NSUInteger option);
                          uniquePropertyKey:(NSString * _Nonnull)uniquePropertyKey
                               timestampKey:(NSString * _Nonnull)timestampKey
                               usingContext:(NSManagedObjectContext * _Nonnull)context
-                                     error:(NSError * _Nullable * _Nullable)error;
+                                     error:(NSError * _Nullable __autoreleasing * _Nullable)error;
 
 + (void)performBatchPopulationForEntity:(NSEntityDescription * _Nonnull)entity
                 usingPropertiesToUpdate:(NSDictionary * _Nonnull)propertiesToUpdate

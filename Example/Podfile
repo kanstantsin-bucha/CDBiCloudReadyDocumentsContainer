@@ -1,11 +1,11 @@
 source 'https://github.com/CocoaPods/Specs.git'
 use_frameworks!
 
-target 'CDBiCloudReadyDocumentsContainer_Example', :exclusive => true do
+target 'CDBiCloudReadyDocumentsContainer_Example' do
   pod "CDBiCloudReadyDocumentsContainer", :path => "../"
 end
 
-target 'CDBiCloudReadyDocumentsContainer_Tests', :exclusive => true do
+target 'CDBiCloudReadyDocumentsContainer_Tests' do
   pod "CDBiCloudReadyDocumentsContainer", :path => "../"
 
   

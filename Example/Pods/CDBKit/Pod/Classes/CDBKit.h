@@ -43,9 +43,7 @@ typedef void (^CDBObjectErrorCompletion) (id _Nullable object, NSError * _Nullab
 
     #define DLogCDB(...) \
     do{\
-        printf("[%s:%d]", __FUNCTION__, __LINE__);\
-        NSString *_S_ =  [NSString stringWithFormat:__VA_ARGS__];\
-        printf(" %s\r",[_S_ cStringUsingEncoding:NSUTF8StringEncoding]);\
+        NSLog(@"%@", [NSString stringWithFormat:__VA_ARGS__]);\
     } while(0)
 
 #else
@@ -57,8 +55,33 @@ typedef void (^CDBObjectErrorCompletion) (id _Nullable object, NSError * _Nullab
     #define RLogCDB(verbose, ...) \
     do{\
         if ((verbose) == NO) continue;\
+        NSLog(@"%@", [NSString stringWithFormat:__VA_ARGS__]);\
+    } while(0)
+
+
+
+#if DEBUG
+
+    #define DLogFileCDB(...) \
+    do{\
+        printf("[%s:%d]", __FUNCTION__, __LINE__);\
+        NSString *_S_ =  [NSString stringWithFormat:__VA_ARGS__];\
+        NSLog(@"%@", _S_);\
+        printf(" %s\r",[_S_ cStringUsingEncoding:NSUTF8StringEncoding]);\
+    } while(0)
+
+#else
+
+    #define DLogCDB(...)
+
+#endif
+
+    #define RLogFileCDB(verbose, ...) \
+    do{\
+        if ((verbose) == NO) continue;\
         printf("[%s]", __FUNCTION__);\
         NSString *_S_ =  [NSString stringWithFormat:__VA_ARGS__];\
+        NSLog(@"%@", _S_);\
         printf(" %s\r",[_S_ cStringUsingEncoding:NSUTF8StringEncoding]);\
     } while(0)
 

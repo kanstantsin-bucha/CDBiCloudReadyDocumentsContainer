@@ -9,7 +9,7 @@
 #endif
 
 
-#import "CDBiCloudReadyConstants.h"
+#import "CDBiCloudKitConstants.h"
 #import "CDBDocument.h"
 #import <CDBKit/CDBKit.h>
 
@@ -128,21 +128,21 @@ CDBDocumentDelegate
                                documentContent:(NSData * _Nullable)content
                                     completion:(CDBiCloudDocumentCompletion _Nonnull)completion;
 
-- (void)readContentOfDocumentAtURL:(NSURL *)URL
-                        completion:(void(^)(NSData * data, NSError * error))completion;
+- (void)readContentOfDocumentAtURL:(NSURL * _Nonnull)URL
+                        completion:(nonnull void(^)(NSData * _Nullable data, NSError * _Nullable error))completion;
 /**
  Process block called only once for every single revision of the document with unique name
  if file modified date doesn't change processing block doesn't call
 **/
-- (void)processDocumentWithName:(NSString *)name
-                          atURL:(NSURL *)URL
-                processingBlock:(void(^) (NSData * documentData, NSError * error))processingBlock;
+- (void)processDocumentWithName:(NSString * _Nonnull)name
+                          atURL:(NSURL * _Nonnull)URL
+                processingBlock:(nonnull void(^) (NSData * _Nullable documentData, NSError * _Nullable error))processingBlock;
 
-- (void)processStringsDocumentWithName:(NSString *)name
-                                 atURL:(NSURL *)URL
-               separationCharactersSet:(NSCharacterSet *)separators
+- (void)processStringsDocumentWithName:(NSString * _Nonnull)name
+                                 atURL:(NSURL * _Nonnull)URL
+               separationCharactersSet:(NSCharacterSet * _Nonnull)separators
                      onlyUniqueStrings:(BOOL)unique
-                processingStringsBlock:(void(^) (NSArray * documentStrings, NSError * error))stringsProcessingBlock;
+                processingStringsBlock:(nonnull void(^) (NSArray * _Nullable documentStrings, NSError * _Nullable error))stringsProcessingBlock;
 
 /**
  Delete document in localDocumentsURL directory (for local documents)
@@ -172,7 +172,7 @@ CDBDocumentDelegate
 - (void)didChangeCloudStateOfCDBCloudDocuments:(CDBCloudDocuments * _Nonnull)documents;
 
 - (void)CDBCloudDocuments:(CDBCloudDocuments * _Nonnull)documents
-   didChangeMetadataQuery:(NSMetadataQuery *)query;
+   didChangeMetadataQuery:(NSMetadataQuery * _Nonnull)query;
 
 - (void)CDBCloudDocuments:(CDBCloudDocuments * _Nonnull)documents
     didAutoresolveConflictInCDBDocument:(CDBDocument * _Nonnull)document;

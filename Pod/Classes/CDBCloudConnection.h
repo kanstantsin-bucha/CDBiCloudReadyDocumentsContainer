@@ -7,9 +7,8 @@
     #import <UIKit/UIKit.h>
 #endif
 
-
 #import <CDBKit/CDBKit.h>
-#import "CDBiCloudReadyConstants.h"
+#import "CDBiCloudKitConstants.h"
 #import "CDBCloudDocuments.h"
 #import "CDBCloudStore.h"
 
@@ -27,7 +26,7 @@ extern NSString * _Nonnull CDBCloudConnectionDidChangeState;
  **/
 
 @property (assign, nonatomic, readonly) CDBCloudState state;
-@property (weak, nonatomic) id<CDBCloudConnectionDelegate> delegate;
+@property (weak, nonatomic, nullable) id<CDBCloudConnectionDelegate> delegate;
 
 @property (strong, nonatomic, readonly, nullable) NSURL * ubiquityContainerURL;
 @property (strong, nonatomic, readonly, nullable) id ubiquityIdentityToken;
@@ -65,8 +64,8 @@ extern NSString * _Nonnull CDBCloudConnectionDidChangeState;
  if you override this method you should provide statechanges by itelf
  or calling [ provideStateChanges] method
  **/
-- (void)CDBCloudConnectionDidChangeState:(CDBCloudConnection *)connection;
-- (void)CDBCloudConnectionDidDetectDisabledCloud:(CDBCloudConnection *)connection;
+- (void)CDBCloudConnectionDidChangeState:(CDBCloudConnection * _Nonnull)connection;
+- (void)CDBCloudConnectionDidDetectDisabledCloud:(CDBCloudConnection * _Nonnull)connection;
 
 
 @end

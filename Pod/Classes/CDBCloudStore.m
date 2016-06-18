@@ -857,32 +857,38 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
                               timestampKey:(NSString *)timestampKey
                               usingContext:(NSManagedObjectContext *)context
                                      error:(NSError **)error {
+    NSError * internalError = nil;
     
     NSArray * valuesWithDupes = [self valuesWithDublicatesForEntity:entity
                                                   uniquePropertyKey:uniquePropertyKey
                                                        usingContext:context
-                                                              error:error];
+                                                              error:&internalError];
     
     
-    if (*error != nil) {
+    if (internalError != nil) {
         RLogCDB(YES, @"failed to fetch values with dupes for unique key - %@, entity %@",
                 uniquePropertyKey, entity.name);
+        *error = internalError;
         return;
     }
     
     RLogCDB(YES, @"found %ld not uniqued keys for entity %@",
             (unsigned long) valuesWithDupes.count, entity.name);
     
+    
+    internalError = nil;
+    
     [self resolveDuplicatesForEntity:entity
                    uniquePropertyKey:uniquePropertyKey
                         timestampKey:timestampKey
            usingValuesWithDublicates:valuesWithDupes
                              context:context
-                               error:error];
+                               error:&internalError];
     
-    if (*error != nil) {
+    if (internalError != nil) {
         RLogCDB(YES, @"failed to resolve dupes for unique key - %@, timestamp key - %@, entity %@",
                 uniquePropertyKey, timestampKey, entity.name);
+        *error = internalError;
         return;
     }
 }
@@ -911,8 +917,19 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
     [request setPropertiesToGroupBy:@[uniqueAttribute]];
     [request setResultType:NSDictionaryResultType];
     
+    NSError * internalError = nil;
+    
     NSArray * fetchedDictionaries = [context executeFetchRequest:request
-                                                           error:error];
+                                                           error:&internalError];
+    
+    if (internalError != nil) {
+        RLogCDB(YES, @"failed to execute request: %@\
+                      \r using context: %@\
+                      \r error: %@",
+                       request, context, internalError);
+        *error = internalError;
+        return nil;
+    }
     
     NSMutableArray * result = [NSMutableArray array];
     for (NSDictionary * dict in fetchedDictionaries) {
@@ -940,10 +957,17 @@ CDBCloudStoreState CDBRemoveStoreState(CDBCloudStoreState state, NSUInteger opti
                                                                             ascending:YES];
     [dupeRequest setSortDescriptors:@[uniquePropertySorted]];
     
+    NSError * internalError = nil;
+    
     NSArray * fetchedDupes = [context executeFetchRequest:dupeRequest
                                                     error:error];
     
-    if (*error != nil) {
+    if (internalError != nil) {
+        RLogCDB(YES, @"failed to execute dupeRequest: %@\
+                \r using context: %@\
+                \r error: %@",
+                dupeRequest, context, internalError);
+        *error = internalError;
         return;
     }
     

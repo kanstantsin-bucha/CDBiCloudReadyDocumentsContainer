@@ -6,12 +6,12 @@
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html
 #
 
-@version = "1.0.0"
+@version = "1.0.1"
 
 Pod::Spec.new do |s|
   s.name             = "CDBiCloudReadyDocumentsContainer"
   s.version          = @version
-  s.summary          = "UIDocument CRUD container supposed to be used with iCloud Documents"
+  s.summary          = "DEPRECATED USE CDBiCloudKit POD"
 
 # This description is used to generate tags and improve search results.
 #   * Think: What does it do? Why did you write it? What is the focus?
@@ -19,13 +19,7 @@ Pod::Spec.new do |s|
 #   * Write the description between the DESC delimiters below.
 #   * Finally, don't worry about the indent, CocoaPods strips it!  
   s.description      = <<-DESC
-    UIDocument CRUD container maintains connection to iCloud and make delegates calls on it's' state changed.
-    It also provide a list of documents stored on the cloud and updates it in real time.
-    UIDocument CRUD container also could create local documents and read, update, delete loacal and iCloud documents.
-    It also could move documents from a local directory to the cloud and vise versa.
-    CDBDocument resolves conflicts automatically based on the latest version.
-    CDBDocument could rename file of a document.
-    CDBDocument provides document file states and user friendly properties to check them.
+    DEPRECATED.
                        DESC
 
   s.homepage         = "https://github.com/yocaminobien/CDBiCloudReadyDocumentsContainer"
@@ -41,4 +35,5 @@ Pod::Spec.new do |s|
   s.frameworks = 'UIKit', 'CoreData'
   s.dependency 'CDBKit', '~> 0.0'
   s.dependency 'CDBUUID', '~> 1.0.0'
+  s.deprecated = true
 end

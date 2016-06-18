@@ -1,5 +1,5 @@
 PODS:
-  - CDBiCloudReadyDocumentsContainer (1.0.1):
+  - CDBiCloudReadyDocumentsContainer (1.0.3):
     - CDBKit (~> 0.0)
     - CDBUUID (~> 1.0.0)
   - CDBKit (0.0.2)
@@ -13,7 +13,7 @@ EXTERNAL SOURCES:
     :path: ../
 
 SPEC CHECKSUMS:
-  CDBiCloudReadyDocumentsContainer: 634c15c61065290fcdb95724618a2637dae59c02
+  CDBiCloudReadyDocumentsContainer: c6db24aae941725e4478219dd40db0531dc4ea49
   CDBKit: a623c30e928d5fd30718b276b40be9a3f5c33c2c
   CDBUUID: c42280bf7d31b8121ea7a5f94b4c063e5068330d
 

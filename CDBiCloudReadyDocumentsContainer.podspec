@@ -6,7 +6,7 @@
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html
 #
 
-@version = "1.0.1"
+@version = "1.0.3"
 
 Pod::Spec.new do |s|
   s.name             = "CDBiCloudReadyDocumentsContainer"
@@ -19,8 +19,8 @@ Pod::Spec.new do |s|
 #   * Write the description between the DESC delimiters below.
 #   * Finally, don't worry about the indent, CocoaPods strips it!  
   s.description      = <<-DESC
-    DEPRECATED.
-                       DESC
+   DEPRECATED. Lorem ipsum dolor sit amet, etiam recusabo mel eu, copiosae verterem contentiones mea ea. At wisi conclusionemque nam, ius et regione detracto omittantur. Et eam vivendo indoctum.
+                           DESC
 
   s.homepage         = "https://github.com/yocaminobien/CDBiCloudReadyDocumentsContainer"
   s.license          = 'MIT'
@@ -28,7 +28,7 @@ Pod::Spec.new do |s|
   s.source           = { :git => "https://github.com/yocaminobien/CDBiCloudReadyDocumentsContainer.git", :tag => s.version.to_s }
   s.social_media_url = 'https://twitter.com/yocaminobien'
 
-  s.platform     = :ios, '7.0'
+  s.platform     = :ios, '8.0'
   s.requires_arc = true
 
   s.source_files = 'Pod/Classes/**/*'

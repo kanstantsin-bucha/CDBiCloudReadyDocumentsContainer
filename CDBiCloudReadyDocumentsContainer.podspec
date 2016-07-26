@@ -6,7 +6,7 @@
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html
 #
 
-@version = "1.0.4"
+@version = "1.0.5"
 
 Pod::Spec.new do |s|
   s.name             = "CDBiCloudReadyDocumentsContainer"
@@ -19,7 +19,8 @@ Pod::Spec.new do |s|
 #   * Write the description between the DESC delimiters below.
 #   * Finally, don't worry about the indent, CocoaPods strips it!  
   s.description      = <<-DESC
-   DEPRECATED USE CDBiCloudKit POD
+   DEPRECATED USE CDBiCloudKit Instead
+   DESC
 
   s.homepage         = "https://github.com/truebucha/CDBiCloudReadyDocumentsContainer"
   s.license          = 'MIT'

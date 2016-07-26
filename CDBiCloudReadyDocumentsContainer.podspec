@@ -6,7 +6,7 @@
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html
 #
 
-@version = "1.0.3"
+@version = "1.0.4"
 
 Pod::Spec.new do |s|
   s.name             = "CDBiCloudReadyDocumentsContainer"
@@ -19,14 +19,13 @@ Pod::Spec.new do |s|
 #   * Write the description between the DESC delimiters below.
 #   * Finally, don't worry about the indent, CocoaPods strips it!  
   s.description      = <<-DESC
-   DEPRECATED. Lorem ipsum dolor sit amet, etiam recusabo mel eu, copiosae verterem contentiones mea ea. At wisi conclusionemque nam, ius et regione detracto omittantur. Et eam vivendo indoctum.
-                           DESC
+   DEPRECATED USE CDBiCloudKit POD
 
-  s.homepage         = "https://github.com/yocaminobien/CDBiCloudReadyDocumentsContainer"
+  s.homepage         = "https://github.com/truebucha/CDBiCloudReadyDocumentsContainer"
   s.license          = 'MIT'
-  s.author           = { "yocaminobien" => "yocaminobien@gmail.com" }
-  s.source           = { :git => "https://github.com/yocaminobien/CDBiCloudReadyDocumentsContainer.git", :tag => s.version.to_s }
-  s.social_media_url = 'https://twitter.com/yocaminobien'
+  s.author           = { "truebucha" => "truebucha@gmail.com" }
+  s.source           = { :git => "https://github.com/truebucha/CDBiCloudReadyDocumentsContainer.git", :tag => s.version.to_s }
+  s.social_media_url = 'https://twitter.com/truebucha'
 
   s.platform     = :ios, '8.0'
   s.requires_arc = true
@@ -35,5 +34,5 @@ Pod::Spec.new do |s|
   s.frameworks = 'UIKit', 'CoreData'
   s.dependency 'CDBKit', '~> 0.0'
   s.dependency 'CDBUUID', '~> 1.0.0'
-  s.deprecated = true
+  s.deprecated = false
 end

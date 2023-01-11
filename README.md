@@ -1,3 +1,5 @@
+It was archived. Please write to me at kanstantsin.bucha@icloud.com in case any issues occur.
+
 # CDBiCloudReadyDocumentsContainer
 UIDocument based container with CRUD operations supposed to use with iCloud Documents
 
